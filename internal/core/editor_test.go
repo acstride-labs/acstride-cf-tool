@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -85,9 +86,16 @@ func TestSharedPacingAndCancellation(t *testing.T) {
 	if e := first(context.Background()); e != nil {
 		t.Fatal(e)
 	}
-	start := time.Now()
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Millisecond)
-	defer cancel()
+	initialBytes, err := os.ReadFile(filepath.Join(directory, "last-start"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	initial, err := strconv.ParseInt(string(initialBytes), 10, 64)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
 	if e := second(ctx); e == nil {
 		t.Fatal("cancel ignored")
 	}
@@ -102,7 +110,17 @@ func TestSharedPacingAndCancellation(t *testing.T) {
 		}(pace)
 	}
 	wg.Wait()
-	if time.Since(start) < 90*time.Millisecond {
+	lastBytes, err := os.ReadFile(filepath.Join(directory, "last-start"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	last, err := strconv.ParseInt(string(lastBytes), 10, 64)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Measure reserved request starts, not time after fsync: slow CI disks may
+	// consume part of an interval before the first call returns.
+	if time.Duration(last-initial) < 100*time.Millisecond {
 		t.Fatal("independent clients bypassed shared pacing")
 	}
 	if _, e := os.Stat(filepath.Join(directory, "last-start")); e != nil {
