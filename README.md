@@ -17,7 +17,7 @@ ACStride CF Tool 是一个与 [Codeforces](https://codeforces.com) 交互的命�
 
 如果你使用 AC-Stride VS Code 插件，只需安装与你的系统匹配的插件包。CF Tool 和题面下载依赖已经包含在插件中，不需要另外安装、配置 PATH，或安装 Go/Python。
 
-独立使用时，优先从本仓库 [Releases](https://github.com/acstride-labs/acstride-cf-tool/releases) 下载对应系统与 CPU 的独立可执行文件或完整压缩包，并核对 `SHA256SUMS`；发布后的自动构建完成，文件才会出现在 Release 的 Assets 中。尚未发布的开发构建可从 [Actions](https://github.com/acstride-labs/acstride-cf-tool/actions) 下载 artifact。压缩包解压后即可运行；独立文件下载后可重命名为 `acstride-cf`（Windows 为 `acstride-cf.exe`）。压缩包另附许可证、第三方声明及构建信息。发布流水线提供 Linux、macOS、Windows 的 amd64/arm64 二进制；交叉编译产物不代表每种架构都已实际运行验证。macOS/Linux 如没有执行权限，先运行 `chmod +x ./acstride-cf`。下面以 macOS/Linux 为例；Windows PowerShell 将 `./acstride-cf` 换成 `.\acstride-cf.exe`。
+独立使用时，优先从本仓库 [Releases](https://github.com/acstride-labs/codeforces-client/releases) 下载对应系统与 CPU 的独立可执行文件或完整压缩包，并核对 `SHA256SUMS`；发布后的自动构建完成，文件才会出现在 Release 的 Assets 中。尚未发布的开发构建可从 [Actions](https://github.com/acstride-labs/codeforces-client/actions) 下载 artifact。压缩包解压后即可运行；独立文件下载后可重命名为 `acstride-cf`（Windows 为 `acstride-cf.exe`）。压缩包另附许可证、第三方声明及构建信息。发布流水线提供 Linux、macOS、Windows 的 amd64/arm64 二进制；交叉编译产物不代表每种架构都已实际运行验证。macOS/Linux 如没有执行权限，先运行 `chmod +x ./acstride-cf`。下面以 macOS/Linux 为例；Windows PowerShell 将 `./acstride-cf` 换成 `.\acstride-cf.exe`。
 
 ### 2. 查看能力和比赛
 
