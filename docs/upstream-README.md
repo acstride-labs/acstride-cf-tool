@@ -72,27 +72,27 @@ If the contest has not started yet, `cf` will count down. If the contest have st
 
 Enter the directory of problem A, the directory should contain all samples of the problem.
 
- `cf gen` 
+ `cf gen`
 
 Generate a code with the default template. The filename of the code is problem id by default.
 
- `vim a.cpp` 
+ `vim a.cpp`
 
 Use Vim to write the code (It depends on yourself).
 
- `cf test` 
+ `cf test`
 
 Compile and test all samples.
 
- `cf submit` 
+ `cf submit`
 
 Submit the code.
 
- `cf list` 
+ `cf list`
 
 List problems' stats of the contest.
 
- `cf stand` 
+ `cf stand`
 
 Open the standings' page of the contest.
 
@@ -138,7 +138,7 @@ Examples:
   cf submit            cf will detect what you want to submit automatically.
   cf submit -f a.cpp
   cf submit https://codeforces.com/contest/100/A
-  cf submit -f a.cpp 100A 
+  cf submit -f a.cpp 100A
   cf submit -f a.cpp 100 a
   cf submit contest 100 a
   cf submit gym 100001 a
@@ -252,7 +252,7 @@ typedef long long ll;
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(0);
-    
+
     return 0;
 }
 ```
