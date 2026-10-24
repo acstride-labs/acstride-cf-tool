@@ -1,280 +1,165 @@
-# AC-Stride CF Tool
+# ACStride CF Tool
 
-The Codeforces CLI development fork for **AC-Stride**, based on
-[xalanq/cf-tool](https://github.com/xalanq/cf-tool).
-The original MIT license and attribution are preserved. The command remains `cf`
-for compatibility. No login, site-verification or submission fixes have been
-validated in this fork yet. The documentation below describes the inherited
-upstream implementation; release badges and downloads refer to the upstream project.
+A non-interactive Codeforces CLI and editor integration core, derived from
+[xalanq/cf-tool](https://github.com/xalanq/cf-tool). MIT licensed; the original
+copyright and license are retained. This is not an official Codeforces client.
 
-Related: [VS Code extension](https://github.com/acstride-labs/acstride-vscode-extension)
-and [product website](https://github.com/acstride-labs/acstride-web).
+[简体中文](README.zh-CN.md) · [Protocol](docs/protocol.md) · [Architecture](docs/architecture.md)
 
-[![Github release](https://img.shields.io/github/release/xalanq/cf-tool.svg)](https://github.com/xalanq/cf-tool/releases)
-[![platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue.svg)](https://github.com/xalanq/cf-tool/releases)
-[![Build Status](https://travis-ci.org/xalanq/cf-tool.svg?branch=master)](https://travis-ci.org/xalanq/cf-tool)
-[![Go Report Card](https://goreportcard.com/badge/github.com/xalanq/cf-tool)](https://goreportcard.com/report/github.com/xalanq/cf-tool)
-[![Go Version](https://img.shields.io/badge/go-%3E%3D1.12-green.svg)](https://github.com/golang)
-[![license](https://img.shields.io/badge/license-MIT-%23373737.svg)](https://raw.githubusercontent.com/xalanq/cf-tool/master/LICENSE)
+## Status
 
-Codeforces Tool is a command-line interface tool for [Codeforces](https://codeforces.com).
+Version 0.2 introduces protocol v1, anonymous reads, isolated contest caches,
+bounded HTTP requests, OS-keyring sessions and durable experimental submission
+receipts. Login/submission are **experimental, opt-in and not verified against a
+real account**. Site challenges are detected, never solved or bypassed. A 200
+response is not proof of successful submission. Keep the official site available.
 
-It's fast, small, cross-platform and powerful.
+## Build
 
-[Installation](#installation) | [Usage](#usage) | [FAQ](#faq) | [中文](./README_zh_CN.md)
+Developers need Go 1.26+. End users need only the platform binary; no Go, Python,
+pip, system installation, PATH changes, listening port or background daemon is required.
 
-## Features
-
-* Support Contests, Gym, Groups and acmsguru.
-* Support all programming languages in Codeforces.
-* Submit codes.
-* Watch submissions' status dynamically.
-* Fetch problems' samples.
-* Compile and test locally.
-* Clone all codes of someone.
-* Generate codes from the specified template (including timestamp, author, etc.)
-* List problems' stats of one contest.
-* Use default web browser to open problems' pages, standings' page, etc.
-* Setup a network proxy. Setup a mirror host.
-* Colorful CLI.
-
-Pull requests are always welcome.
-
-![](./assets/readme_1.gif)
-
-## Installation
-
-You can download the pre-compiled binary file in [here](https://github.com/xalanq/cf-tool/releases).
-
-Then enjoy the cf-tool~
-
-Or you can compile it from the source **(go >= 1.12)**:
-
-```plain
-$ go get github.com/xalanq/cf-tool
-$ cd $GOPATH/src/github.com/xalanq/cf-tool
-$ go build -ldflags "-s -w" cf.go
+```sh
+go mod download all
+go mod verify
+go test -race ./...
+go vet ./...
+go build -trimpath -o dist/acstride-cf ./cmd/acstride-cf
+go run ./tools/notices -output dist/THIRD_PARTY_NOTICES.txt
 ```
 
-If you don't know what's the `$GOPATH`, please see here <https://github.com/golang/go/wiki/GOPATH>.
+Distribute `LICENSE` and generated notices with the binary. CI checks Linux,
+macOS and Windows and builds amd64/arm64 artifacts. Cross-compilation alone is
+not execution testing of every target. Self-updating is intentionally disabled;
+editor-bundled binaries must update with their host extension.
 
-## Usage
+## Anonymous commands
 
-Let's simulate a competition.
-
- `cf race 1136` or `cf race https://codeforces.com/contest/1136`
-
-To start competing the contest 1136!
-
-If the contest has not started yet, `cf` will count down. If the contest have started or the countdown ends, `cf` will use the default browser to open dashboard's page and problems' page, and fetch all samples to the local.
-
- `cd ./cf/contest/1136/a` (May be different from this, please notice the message on your screen)
-
-Enter the directory of problem A, the directory should contain all samples of the problem.
-
- `cf gen` 
-
-Generate a code with the default template. The filename of the code is problem id by default.
-
- `vim a.cpp` 
-
-Use Vim to write the code (It depends on yourself).
-
- `cf test` 
-
-Compile and test all samples.
-
- `cf submit` 
-
-Submit the code.
-
- `cf list` 
-
-List problems' stats of the contest.
-
- `cf stand` 
-
-Open the standings' page of the contest.
-
-```plain
-You should run "cf config" to configure your handle, password and code
-templates at first.
-
-If you want to compete, the best command is "cf race".
-
-Usage:
-  cf config
-  cf submit [-f <file>] [<specifier>...]
-  cf list [<specifier>...]
-  cf parse [<specifier>...]
-  cf gen [<alias>]
-  cf test [<file>]
-  cf watch [all] [<specifier>...]
-  cf open [<specifier>...]
-  cf stand [<specifier>...]
-  cf sid [<specifier>...]
-  cf race [<specifier>...]
-  cf pull [ac] [<specifier>...]
-  cf clone [ac] [<handle>]
-  cf upgrade
-
-Options:
-  -h --help            Show this screen.
-  --version            Show version.
-  -f <file>, --file <file>, <file>
-                       Path to file. E.g. "a.cpp", "./temp/a.cpp"
-  <specifier>          Any useful text. E.g.
-                       "https://codeforces.com/contest/100",
-                       "https://codeforces.com/contest/180/problem/A",
-                       "https://codeforces.com/group/Cw4JRyRGXR/contest/269760",
-                       "1111A", "1111", "a", "Cw4JRyRGXR"
-                       You can combine multiple specifiers to specify what you
-                       want.
-  <alias>              Template's alias. E.g. "cpp"
-  ac                   The status of the submission is Accepted.
-
-Examples:
-  cf config            Configure the cf-tool.
-  cf submit            cf will detect what you want to submit automatically.
-  cf submit -f a.cpp
-  cf submit https://codeforces.com/contest/100/A
-  cf submit -f a.cpp 100A 
-  cf submit -f a.cpp 100 a
-  cf submit contest 100 a
-  cf submit gym 100001 a
-  cf list              List all problems' stats of a contest.
-  cf list 1119
-  cf parse 100         Fetch all problems' samples of contest 100 into
-                       "{cf}/{contest}/100/".
-  cf parse gym 100001a
-                       Fetch samples of problem "a" of gym 100001 into
-                       "{cf}/{gym}/100001/a".
-  cf parse gym 100001
-                       Fetch all problems' samples of gym 100001 into
-                       "{cf}/{gym}/100001".
-  cf parse             Fetch samples of current problem into current path.
-  cf gen               Generate a code from default template.
-  cf gen cpp           Generate a code from the template whose alias is "cpp"
-                       into current path.
-  cf test              Run the commands of a template in current path. Then
-                       test all samples. If you want to add a new testcase,
-                       create two files "inK.txt" and "ansK.txt" where K is
-                       a string with 0~9.
-  cf watch             Watch the first 10 submissions of current contest.
-  cf watch all         Watch all submissions of current contest.
-  cf open 1136a        Use default web browser to open the page of contest
-                       1136, problem a.
-  cf open gym 100136   Use default web browser to open the page of gym
-                       100136.
-  cf stand             Use default web browser to open the standing page.
-  cf sid 52531875      Use default web browser to open the submission
-                       52531875's page.
-  cf sid               Open the last submission's page.
-  cf race 1136         If the contest 1136 has not started yet, it will
-                       countdown. When the countdown ends, it will open all
-                       problems' pages and parse samples.
-  cf pull 100          Pull all problems' latest codes of contest 100 into
-                       "./100/<problem-id>".
-  cf pull 100 a        Pull the latest code of problem "a" of contest 100 into
-                       "./100/<problem-id>".
-  cf pull ac 100 a     Pull the "Accepted" or "Pretests passed" code of problem
-                       "a" of contest 100.
-  cf pull              Pull the latest codes of current problem into current
-                       path.
-  cf clone xalanq      Clone all codes of xalanq.
-  cf upgrade           Upgrade the "cf" to the latest version from GitHub.
-
-File:
-  cf will save some data in some files:
-
-  "~/.cf/config"        Configuration file, including templates, etc.
-  "~/.cf/session"       Session file, including cookies, handle, password, etc.
-
-  "~" is the home directory of current user in your system.
-
-Template:
-  You can insert some placeholders into your template code. When generate a code
-  from the template, cf will replace all placeholders by following rules:
-
-  $%U%$   Handle (e.g. xalanq)
-  $%Y%$   Year   (e.g. 2019)
-  $%M%$   Month  (e.g. 04)
-  $%D%$   Day    (e.g. 09)
-  $%h%$   Hour   (e.g. 08)
-  $%m%$   Minute (e.g. 05)
-  $%s%$   Second (e.g. 00)
-
-Script in template:
-  Template will run 3 scripts in sequence when you run "cf test":
-    - before_script   (execute once)
-    - script          (execute the number of samples times)
-    - after_script    (execute once)
-  You could set "before_script" or "after_script" to empty string, meaning
-  not executing.
-  You have to run your program in "script" with standard input/output (no
-  need to redirect).
-
-  You can insert some placeholders in your scripts. When execute a script,
-  cf will replace all placeholders by following rules:
-
-  $%path%$   Path to source file (Excluding $%full%$, e.g. "/home/xalanq/")
-  $%full%$   Full name of source file (e.g. "a.cpp")
-  $%file%$   Name of source file (Excluding suffix, e.g. "a")
-  $%rand%$   Random string with 8 character (including "a-z" "0-9")
+```sh
+acstride-cf capabilities --json
+acstride-cf doctor --json
+acstride-cf contest info 1 --json
+acstride-cf problem fetch 1 A --output ./practice --json
+acstride-cf contest download 1 --output ./practice --stream --json
+acstride-cf submissions list --contest 1 --handle tourist --count 20 --json
+acstride-cf standings list 1 --count 100 --json
+acstride-cf standings list 1 --handle tourist --json
+acstride-cf submission watch --contest 1 --handle tourist --submission-id 123 --json
 ```
 
-## Template Example
+All output is JSON, including errors, even without `--json`. Flags may follow
+positionals. Commands never prompt. `--request-id` correlates editor requests.
+`--timeout` bounds the total operation (default 120s, max 10m); individual HTTP
+requests have a 25s deadline, 8 MB limit, same-origin redirect checks and at least
+2.1s between request starts within one client. Editors must serialize separate
+CLI processes too. Read retries use backoff only in batch problem downloading;
+submission POSTs are never retried. SIGINT/SIGTERM cancel work.
 
-The placeholders inside the template will be replaced with the corresponding content when you run `cf gen`.
+Only public regular contests are supported by the new protocol. Gym, groups,
+registration, virtual participation and clarifications are not implemented.
+Standings/submissions can be frozen, delayed or unavailable. Recent submission
+lookups are bounded to 100 records. Watch tracks an explicit ID, never 'latest'.
 
-```
-$%U%$   Handle (e.g. xalanq)
-$%Y%$   Year   (e.g. 2019)
-$%M%$   Month  (e.g. 04)
-$%D%$   Day    (e.g. 09)
-$%h%$   Hour   (e.g. 08)
-$%m%$   Minute (e.g. 05)
-$%s%$   Second (e.g. 00)
-```
+### Downloads and cache
 
-```cpp
-/* Generated by powerful Codeforces Tool
- * You can download the binary file in here https://github.com/xalanq/cf-tool (Windows, macOS, Linux)
- * Author: $%U%$
- * Time: $%Y%$-$%M%$-$%D%$ $%h%$:$%m%$:$%s%$
-**/
+`problem fetch` returns sanitized statement HTML/text, limits and samples. It
+does not require login. HTML is untrusted data; clients must retain their own
+sanitization/CSP. JavaScript, SVG, event handlers and non-Codeforces image/link
+URLs are removed. Mathematical notation is preserved as source HTML/text, not
+rendered by the CLI. Images remain official HTTPS references, not offline files.
+`problem page` returns **raw untrusted HTML** for existing editor parsers.
 
-#include <bits/stdc++.h>
-using namespace std;
+Cache location:
 
-typedef long long ll;
-
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(0);
-    
-    return 0;
-}
+```text
+practice/contests/1/.acstride/problems/A.json
+practice/contests/2/.acstride/problems/A.json
 ```
 
-## FAQ
+Valid caches expire after 24 hours. `--refresh` forces a new read. Writes are
+atomic and constrained to the chosen root; refresh failure retains the old
+cache, but returns the failure rather than pretending the cache is fresh.
+Only these cache JSON files are written. No solution or custom-test file is
+generated, overwritten or removed. Batch imports retain successes, report each
+failure, and return a nonzero exit code on partial failure. Rerunning reuses
+successful caches. There is no background contest scheduler; the VS Code
+extension owns countdowns, retries across restarts and workspace organization.
 
-### I double click the program but it doesn't work
+`--public-helper /absolute/path/to/cfide-downloader` optionally reuses the
+existing editor-bundled curl_cffi reader for **anonymous problem GETs only**.
+It never receives passwords or cookies. It is not downloaded or installed at
+runtime, is not required for the standard Go transport, and does not guarantee
+access through site verification. No browser integration is introduced.
 
-Codeforces Tool is a command-line tool. You should run it in terminal.
+## Experimental sessions and submissions
 
-### I cannot use `cf` command
+No passwords are accepted as command-line flags or persisted. `session login
+--experimental --credentials-stdin --store` reads a small JSON object with
+`username` and `password` from stdin and stores only the resulting session in
+the OS keyring. Feed stdin using a secure caller/prompt, not a literal password
+in shell history. macOS Keychain, Windows Credential Manager or Linux Secret
+Service must be available. No plaintext fallback is used. The CLI never exports
+stored cookies in output. Persisted sessions have a maximum local lifetime of
+24 hours; they may expire on the server sooner.
 
-You should put the `cf` program to a path (e.g. `/usr/bin/` in Linux) which has been added to system environment variable PATH.
+An editor may instead pass its own transient protocol-v1 session through
+`--session-stdin`; see [protocol](docs/protocol.md). This is an advanced trusted
+caller interface, not a recommendation to copy browser cookies.
 
-Or just google "how to add a path to system environment variable PATH".
+```sh
+acstride-cf session check --experimental
+acstride-cf languages list --contest 1 --experimental
+acstride-cf session forget
+```
 
-### How to add a new testcase
+The official language list is read from the submission form, not an obsolete
+hardcoded C++/Python table. Templates no longer select submission languages.
 
-Create two extra testcase files `inK.txt` and `ansK.txt` (K is a string with 0~9).
+To submit, save a source file, review its bytes and SHA256, and explicitly pass
+`--contest`, `--problem`, `--file`, `--language-id`, `--expected-sha256`,
+`--experimental` and `--confirm`. A source change aborts before authentication.
+The form's account and offered language must match the request. A private
+snapshot and an `unknown` receipt are written **before the one submission POST**.
 
-### Enable tab completion in terminal
+Every attempted send returns exit 5 with a receipt until it is independently
+confirmed. Inspect/reconcile it:
 
-Use this [Infinidat/infi.docopt_completion](https://github.com/Infinidat/infi.docopt_completion).
+```sh
+acstride-cf receipt show RECEIPT_ID
+acstride-cf receipt reconcile RECEIPT_ID --experimental
+acstride-cf receipt reconcile RECEIPT_ID --submission-id 123 --experimental
+```
 
-Note: If there is a new version released (especially a new command added), you should run `docopt-completion cf` again.
+Reconciliation requires the authenticated account, a new matching public
+record (account, contest, problem, language, time window) and **exact source
+hash equality** from the owner's submission page. Multiple identical matches
+stay unknown unless an explicit ID is verified. A wrong/newest record is never
+accepted just because its time is close. Website HTML changes, newline
+normalization, inaccessible source, API outages or >100 newer records may
+prevent automatic reconciliation; check the official website.
+
+Unknown receipts block another send for that account/contest/problem across
+restarts. OS file locks serialize concurrent send/reconcile operations and
+release on process exit. `receipt abandon ID --confirm` explicitly acknowledges
+an unresolved attempt and permits a future send; it does **not** prove the
+original failed and may cause duplicates if used carelessly. Confirm on the
+official website first. Receipts/snapshots stay in the user's config directory
+(`--state-dir` overrides it); no cleanup runs automatically. Local source
+snapshots use private permissions but are not encrypted by this application.
+
+`session forget` removes the local keyring entry only; it does not revoke a
+Codeforces server session. Old `~/.cf/session` is not imported by modern commands.
+
+## Legacy compatibility
+
+`go build .` still builds the historical `cf` entry point; new command names
+route to protocol v1. Legacy template/local commands remain for compatibility,
+not for plugin integration. Legacy password login, unsafe submission and
+self-update are retired. Legacy sessions no longer serialize passwords/cookies.
+The old local runner has bounded time/output and paced memory polling, but is
+not a security sandbox and should not run untrusted programs. The maintained
+VS Code runner remains the primary local testing implementation.
+
+Historical upstream instructions are preserved under `docs/upstream-*`; their
+login/update promises are not current ACStride instructions. No proprietary
+subscription or AI layer has been added to this MIT fork.

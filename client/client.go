@@ -2,22 +2,24 @@ package client
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/acstride-labs/acstride-cf-tool/cookiejar"
 	"github.com/fatih/color"
-	"github.com/xalanq/cf-tool/cookiejar"
 )
 
 // Client codeforces client
 type Client struct {
-	Jar            *cookiejar.Jar `json:"cookies"`
+	Jar            *cookiejar.Jar `json:"-"`
 	Handle         string         `json:"handle"`
 	HandleOrEmail  string         `json:"handle_or_email"`
-	Password       string         `json:"password"`
+	Password       string         `json:"-"`
 	Ftaa           string         `json:"ftaa"`
 	Bfaa           string         `json:"bfaa"`
 	LastSubmission *Info          `json:"last_submission"`
@@ -48,7 +50,12 @@ func Init(path, host, proxy string) {
 			Proxy = http.ProxyURL(proxyURL)
 		}
 	}
-	c.client = &http.Client{Jar: c.Jar, Transport: &http.Transport{Proxy: Proxy}}
+	c.client = &http.Client{Jar: c.Jar, Timeout: 25 * time.Second, Transport: &http.Transport{Proxy: Proxy}, CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 5 || req.URL.Scheme != "https" || req.URL.Host != "codeforces.com" {
+			return fmt.Errorf("Unexpected redirect")
+		}
+		return nil
+	}}
 	if err := c.save(); err != nil {
 		color.Red(err.Error())
 	}
@@ -76,8 +83,13 @@ func (c *Client) load() (err error) {
 func (c *Client) save() (err error) {
 	data, err := json.MarshalIndent(c, "", "  ")
 	if err == nil {
-		os.MkdirAll(filepath.Dir(c.path), os.ModePerm)
-		err = ioutil.WriteFile(c.path, data, 0644)
+		err = os.MkdirAll(filepath.Dir(c.path), 0700)
+		if err == nil {
+			err = ioutil.WriteFile(c.path, data, 0600)
+		}
+		if err == nil {
+			err = os.Chmod(c.path, 0600)
+		}
 	}
 	if err != nil {
 		color.Red("Cannot save session to %v\n%v", c.path, err.Error())

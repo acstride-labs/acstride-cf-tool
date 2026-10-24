@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/xalanq/cf-tool/util"
+	"github.com/acstride-labs/acstride-cf-tool/util"
 )
 
 // StatisInfo statis information
@@ -84,10 +84,6 @@ func (c *Client) Statis(info Info) (problems []StatisInfo, err error) {
 
 	body, err := util.GetBody(c.client, URL)
 	if err != nil {
-		return
-	}
-
-	if _, err = findHandle(body); err != nil {
 		return
 	}
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -11,14 +12,15 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 	"unicode"
 
+	"github.com/acstride-labs/acstride-cf-tool/config"
+	"github.com/acstride-labs/acstride-cf-tool/util"
 	"github.com/fatih/color"
 	ansi "github.com/k0kubun/go-ansi"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/shirou/gopsutil/process"
-	"github.com/xalanq/cf-tool/config"
-	"github.com/xalanq/cf-tool/util"
 )
 
 func splitCmd(s string) (res []string) {
@@ -68,15 +70,22 @@ func judge(sampleID, command string) error {
 	if err != nil {
 		return err
 	}
+	defer input.Close()
 	var o bytes.Buffer
 	output := io.Writer(&o)
 
 	cmds := splitCmd(command)
+	if len(cmds) == 0 {
+		return errors.New("Empty execution command")
+	}
 
-	cmd := exec.Command(cmds[0], cmds[1:]...)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, cmds[0], cmds[1:]...)
+	cmd.WaitDelay = time.Second
 	cmd.Stdin = input
-	cmd.Stdout = output
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = &limitedOutput{writer: output, remaining: 1_000_000}
+	cmd.Stderr = &limitedOutput{writer: os.Stderr, remaining: 1_000_000}
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("Runtime Error #%v ... %v", sampleID, err.Error())
 	}
@@ -88,6 +97,8 @@ func judge(sampleID, command string) error {
 		ch <- cmd.Wait()
 	}()
 	running := true
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer ticker.Stop()
 	for running {
 		select {
 		case err := <-ch:
@@ -95,7 +106,7 @@ func judge(sampleID, command string) error {
 				return fmt.Errorf("Runtime Error #%v ... %v", sampleID, err.Error())
 			}
 			running = false
-		default:
+		case <-ticker.C:
 			p, err := process.NewProcess(pid)
 			if err == nil {
 				m, err := p.MemoryInfo()
@@ -145,7 +156,24 @@ func judge(sampleID, command string) error {
 	}
 
 	ansi.Printf("%v ... %.3fs %v\n%v", state, cmd.ProcessState.UserTime().Seconds(), parseMemory(maxMemory), diff)
+	if out != ans {
+		return errors.New("Wrong answer")
+	}
 	return nil
+}
+
+type limitedOutput struct {
+	writer    io.Writer
+	remaining int
+}
+
+func (w *limitedOutput) Write(p []byte) (int, error) {
+	if len(p) > w.remaining {
+		return 0, errors.New("Output limit exceeded")
+	}
+	n, e := w.writer.Write(p)
+	w.remaining -= n
+	return n, e
 }
 
 // Test command
@@ -180,9 +208,15 @@ func Test() (err error) {
 		if s := filter(script); len(s) > 0 {
 			fmt.Println(s)
 			cmds := splitCmd(s)
-			cmd := exec.Command(cmds[0], cmds[1:]...)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
+			if len(cmds) == 0 {
+				return errors.New("Empty script command")
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			cmd := exec.CommandContext(ctx, cmds[0], cmds[1:]...)
+			cmd.WaitDelay = time.Second
+			cmd.Stdout = &limitedOutput{writer: os.Stdout, remaining: 1_000_000}
+			cmd.Stderr = &limitedOutput{writer: os.Stderr, remaining: 1_000_000}
 			return cmd.Run()
 		}
 		return nil
@@ -191,15 +225,17 @@ func Test() (err error) {
 	if err = run(template.BeforeScript); err != nil {
 		return
 	}
+	var failures error
 	if s := filter(template.Script); len(s) > 0 {
 		for _, i := range samples {
 			err := judge(i, s)
 			if err != nil {
 				color.Red(err.Error())
+				failures = errors.Join(failures, err)
 			}
 		}
 	} else {
 		return errors.New("Invalid script command. Please check config file")
 	}
-	return run(template.AfterScript)
+	return errors.Join(failures, run(template.AfterScript))
 }

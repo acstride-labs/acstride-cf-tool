@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -79,7 +79,7 @@ func GetBody(client *http.Client, URL string) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	return ioutil.ReadAll(resp.Body)
+	return readResponse(resp)
 }
 
 // PostBody read post body
@@ -89,7 +89,21 @@ func PostBody(client *http.Client, URL string, data url.Values) ([]byte, error) 
 		return nil, err
 	}
 	defer resp.Body.Close()
-	return ioutil.ReadAll(resp.Body)
+	return readResponse(resp)
+}
+
+func readResponse(resp *http.Response) ([]byte, error) {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
+	}
+	b, e := io.ReadAll(io.LimitReader(resp.Body, 8_000_001))
+	if e != nil {
+		return nil, e
+	}
+	if len(b) > 8_000_000 {
+		return nil, fmt.Errorf("Response too large")
+	}
+	return b, nil
 }
 
 // GetJSONBody read json body

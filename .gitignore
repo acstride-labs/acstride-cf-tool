@@ -16,3 +16,6 @@ cf
 *.out
 
 .vscode
+dist/
+coverage.txt
+/THIRD_PARTY_NOTICES.txt

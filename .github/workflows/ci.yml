@@ -1,0 +1,53 @@
+name: Verify and package
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go mod verify
+      - run: go vet ./...
+      - run: go test -race ./...
+      - run: go build ./...
+  package:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - {os: linux, arch: amd64, suffix: ''}
+          - {os: linux, arch: arm64, suffix: ''}
+          - {os: darwin, arch: amd64, suffix: ''}
+          - {os: darwin, arch: arm64, suffix: ''}
+          - {os: windows, arch: amd64, suffix: '.exe'}
+          - {os: windows, arch: arm64, suffix: '.exe'}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Build standalone binary
+        run: go build -trimpath -ldflags="-s -w" -o dist/acstride-cf${{ matrix.suffix }} ./cmd/acstride-cf
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: '0'
+      - run: go mod download all
+      - run: go run ./tools/notices -output dist/THIRD_PARTY_NOTICES.txt
+      - run: cp LICENSE dist/LICENSE
+      - name: Hash binary and notices
+        run: cd dist && sha256sum * > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: acstride-cf-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/

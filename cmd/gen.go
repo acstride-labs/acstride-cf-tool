@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/acstride-labs/acstride-cf-tool/client"
+	"github.com/acstride-labs/acstride-cf-tool/config"
+	"github.com/acstride-labs/acstride-cf-tool/util"
 	"github.com/fatih/color"
-	"github.com/xalanq/cf-tool/client"
-	"github.com/xalanq/cf-tool/config"
-	"github.com/xalanq/cf-tool/util"
 )
 
 func parseTemplate(source string, cln *client.Client) string {

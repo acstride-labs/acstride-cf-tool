@@ -1,155 +1,97 @@
 package client
 
 import (
-	"bytes"
 	"fmt"
-	"html"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strings"
 	"sync"
+	"time"
 
-	"github.com/xalanq/cf-tool/util"
-
-	"github.com/k0kubun/go-ansi"
-
-	"github.com/fatih/color"
+	"github.com/acstride-labs/acstride-cf-tool/internal/core"
+	"github.com/acstride-labs/acstride-cf-tool/util"
 )
 
-func findSample(body []byte) (input [][]byte, output [][]byte, err error) {
-	irg := regexp.MustCompile(`class="input"[\s\S]*?<pre>([\s\S]*?)</pre>`)
-	org := regexp.MustCompile(`class="output"[\s\S]*?<pre>([\s\S]*?)</pre>`)
-	a := irg.FindAllSubmatch(body, -1)
-	b := org.FindAllSubmatch(body, -1)
-	if a == nil || b == nil || len(a) != len(b) {
-		return nil, nil, fmt.Errorf("Cannot parse sample with input %v and output %v", len(a), len(b))
+func findSample(body []byte) (input, output [][]byte, err error) {
+	p, e := core.ParseProblem(core.Page{HTML: string(body)}, 0, "")
+	if e != nil {
+		return nil, nil, e
 	}
-	newline := regexp.MustCompile(`<[\s/br]+?>`)
-	filter := func(src []byte) []byte {
-		src = newline.ReplaceAll(src, []byte("\n"))
-		s := html.UnescapeString(string(src))
-		return []byte(strings.TrimSpace(s) + "\n")
+	for _, s := range p.Samples {
+		input = append(input, []byte(s.Input))
+		output = append(output, []byte(s.Output))
 	}
-	for i := 0; i < len(a); i++ {
-		input = append(input, filter(a[i][1]))
-		output = append(output, filter(b[i][1]))
-	}
-	return
+	return input, output, nil
 }
-
-// ParseProblem parse problem to path. mu can be nil
 func (c *Client) ParseProblem(URL, path string, mu *sync.Mutex) (samples int, standardIO bool, err error) {
 	body, err := util.GetBody(c.client, URL)
 	if err != nil {
-		return
+		return 0, false, err
 	}
-
-	_, err = findHandle(body)
-	if err != nil {
-		return
-	}
-
 	input, output, err := findSample(body)
 	if err != nil {
-		return
+		return 0, false, err
 	}
-
-	standardIO = true
-	if !bytes.Contains(body, []byte(`<div class="input-file"><div class="property-title">input</div>standard input</div><div class="output-file"><div class="property-title">output</div>standard output</div>`)) {
-		standardIO = false
-	}
-
-	for i := 0; i < len(input); i++ {
-		fileIn := filepath.Join(path, fmt.Sprintf("in%v.txt", i+1))
-		fileOut := filepath.Join(path, fmt.Sprintf("ans%v.txt", i+1))
-		e := ioutil.WriteFile(fileIn, input[i], 0644)
-		if e != nil {
-			if mu != nil {
-				mu.Lock()
+	// This legacy command exports official samples only, with exclusive creation.
+	// Existing sample files are never overwritten. The modern command uses a separate cache.
+	for i := range input {
+		for _, item := range []struct {
+			name string
+			data []byte
+		}{{fmt.Sprintf("in%d.txt", i+1), input[i]}, {fmt.Sprintf("ans%d.txt", i+1), output[i]}} {
+			f, e := os.OpenFile(filepath.Join(path, item.name), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
+			if os.IsExist(e) {
+				continue
 			}
-			color.Red(e.Error())
-			if mu != nil {
-				mu.Unlock()
+			if e != nil {
+				return i, false, e
 			}
-		}
-		e = ioutil.WriteFile(fileOut, output[i], 0644)
-		if e != nil {
-			if mu != nil {
-				mu.Lock()
+			_, e = f.Write(item.data)
+			closeErr := f.Close()
+			if e != nil {
+				return i, false, e
 			}
-			color.Red(e.Error())
-			if mu != nil {
-				mu.Unlock()
+			if closeErr != nil {
+				return i, false, closeErr
 			}
 		}
 	}
-	return len(input), standardIO, nil
+	return len(input), true, nil
 }
-
-// Parse parse
-func (c *Client) Parse(info Info) (problems []string, paths []string, err error) {
-	color.Cyan("Parse " + info.Hint())
-
-	problemID := info.ProblemID
-	info.ProblemID = "%v"
-	urlFormatter, err := info.ProblemURL(c.host)
-	if err != nil {
-		return
-	}
-	info.ProblemID = ""
-	if problemID == "" {
-		statics, err := c.Statis(info)
-		if err != nil {
-			return nil, nil, err
+func (c *Client) Parse(info Info) (problems, paths []string, err error) {
+	id := info.ProblemID
+	if id == "" {
+		stats, e := c.Statis(info)
+		if e != nil {
+			return nil, nil, e
 		}
-		problems = make([]string, len(statics))
-		for i, problem := range statics {
-			problems[i] = problem.ID
+		for _, v := range stats {
+			problems = append(problems, v.ID)
 		}
 	} else {
-		problems = []string{problemID}
+		problems = []string{id}
 	}
-	contestPath := info.Path()
-	ansi.Printf(color.CyanString("The problem(s) will be saved to %v\n"), color.GreenString(contestPath))
-
-	wg := sync.WaitGroup{}
-	wg.Add(len(problems))
-	mu := sync.Mutex{}
-	paths = make([]string, len(problems))
-	for i, problemID := range problems {
-		paths[i] = filepath.Join(contestPath, strings.ToLower(problemID))
-		go func(problemID, path string) {
-			defer wg.Done()
-			mu.Lock()
-			fmt.Printf("Parsing %v\n", problemID)
-			mu.Unlock()
-
-			err = os.MkdirAll(path, os.ModePerm)
-			if err != nil {
-				return
-			}
-			URL := fmt.Sprintf(urlFormatter, problemID)
-
-			samples, standardIO, err := c.ParseProblem(URL, path, &mu)
-			if err != nil {
-				return
-			}
-
-			warns := ""
-			if !standardIO {
-				warns = color.YellowString("Non standard input output format.")
-			}
-			mu.Lock()
-			if err != nil {
-				color.Red("Failed %v. Error: %v", problemID, err.Error())
-			} else {
-				ansi.Printf("%v %v\n", color.GreenString("Parsed %v with %v samples.", problemID, samples), warns)
-			}
-			mu.Unlock()
-		}(problemID, paths[i])
+	for i, id := range problems {
+		if i > 0 {
+			time.Sleep(2100 * time.Millisecond)
+		}
+		index, e := core.ProblemIndex(id)
+		if e != nil {
+			return problems, paths, e
+		}
+		info.ProblemID = index
+		u, e := info.ProblemURL(c.host)
+		if e != nil {
+			return problems, paths, e
+		}
+		path := filepath.Join(info.RootPath, info.ContestID, index)
+		if e = os.MkdirAll(path, 0755); e != nil {
+			return problems, paths, e
+		}
+		paths = append(paths, path)
+		_, _, e = c.ParseProblem(u, path, nil)
+		if e != nil {
+			return problems, paths, e
+		}
 	}
-	wg.Wait()
 	return
 }

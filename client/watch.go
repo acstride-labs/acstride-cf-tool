@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xalanq/cf-tool/util"
+	"github.com/acstride-labs/acstride-cf-tool/util"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/fatih/color"
@@ -102,7 +102,7 @@ func (s *Submission) display(first bool, maxWidth *int) {
 	ansi.Printf("   prob: %v\n", s.name)
 	ansi.Printf("   lang: %v\n", s.lang)
 	refreshLine(1, *maxWidth)
-	ansi.Printf(updateLine(fmt.Sprintf(" status: %v\n", s.ParseStatus()), maxWidth))
+	ansi.Printf("%s", updateLine(fmt.Sprintf(" status: %v\n", s.ParseStatus()), maxWidth))
 	ansi.Printf("   time: %v\n", s.ParseTime())
 	ansi.Printf(" memory: %v\n", s.ParseMemory())
 }

@@ -1,16 +1,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/acstride-labs/acstride-cf-tool/internal/cli"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
+	"github.com/acstride-labs/acstride-cf-tool/client"
+	"github.com/acstride-labs/acstride-cf-tool/cmd"
+	"github.com/acstride-labs/acstride-cf-tool/config"
 	"github.com/fatih/color"
 	ansi "github.com/k0kubun/go-ansi"
 	"github.com/mitchellh/go-homedir"
-	"github.com/xalanq/cf-tool/client"
-	"github.com/xalanq/cf-tool/cmd"
-	"github.com/xalanq/cf-tool/config"
 
 	docopt "github.com/docopt/docopt-go"
 )
@@ -20,6 +24,14 @@ const configPath = "~/.cf/config"
 const sessionPath = "~/.cf/session"
 
 func main() {
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "api", "capabilities", "doctor", "contest", "problem", "submissions", "standings", "submission", "session", "receipt", "languages", "submit", "version", "help", "--version", "--help":
+			ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+			defer cancel()
+			os.Exit(cli.Run(ctx, os.Args[1:], os.Stdin, os.Stdout, os.Stderr))
+		}
+	}
 	usage := `Codeforces Tool $%version%$ (cf). https://github.com/xalanq/cf-tool
 
 You should run "cf config" to configure your handle, password and code
@@ -160,6 +172,7 @@ Script in template:
 	err := cmd.Eval(opts)
 	if err != nil {
 		color.Red(err.Error())
+		os.Exit(1)
 	}
 	color.Unset()
 }
