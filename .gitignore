@@ -19,3 +19,7 @@ cf
 dist/
 coverage.txt
 /THIRD_PARTY_NOTICES.txt
+
+# Python build/test caches
+__pycache__/
+*.pyc

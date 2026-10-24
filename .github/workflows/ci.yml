@@ -19,6 +19,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: python packaging/test-public-fetch.py
+      - run: python packaging/test-release.py
       - run: go mod verify
       - run: go vet ./...
       - run: go test -race ./...

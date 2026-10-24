@@ -17,7 +17,7 @@ ACStride CF Tool 是一个与 [Codeforces](https://codeforces.com) 交互的命�
 
 如果你使用 AC-Stride VS Code 插件，只需安装与你的系统匹配的插件包。CF Tool 和题面下载依赖已经包含在插件中，不需要另外安装、配置 PATH，或安装 Go/Python。
 
-独立使用时，从本仓库 [Actions](https://github.com/acstride-labs/acstride-cf-tool/actions) 中成功的构建下载对应系统与 CPU 的 artifact，解压后在该目录运行。当前 CI 提供 Linux、macOS、Windows 的 amd64/arm64 二进制；交叉编译产物不代表每种架构都已实际运行验证。macOS/Linux 如没有执行权限，先运行 `chmod +x ./acstride-cf`。下面以 macOS/Linux 为例；Windows PowerShell 将 `./acstride-cf` 换成 `.\acstride-cf.exe`。
+独立使用时，优先从本仓库 [Releases](https://github.com/acstride-labs/acstride-cf-tool/releases) 下载对应系统与 CPU 的压缩包，并核对 `SHA256SUMS`；发布后的自动构建完成，文件才会出现在 Release 的 Assets 中。尚未发布的开发构建可从 [Actions](https://github.com/acstride-labs/acstride-cf-tool/actions) 下载 artifact。解压后在该目录运行。发布流水线提供 Linux、macOS、Windows 的 amd64/arm64 二进制；交叉编译产物不代表每种架构都已实际运行验证。macOS/Linux 如没有执行权限，先运行 `chmod +x ./acstride-cf`。下面以 macOS/Linux 为例；Windows PowerShell 将 `./acstride-cf` 换成 `.\acstride-cf.exe`。
 
 ### 2. 查看能力和比赛
 
@@ -271,3 +271,7 @@ go build -trimpath -o dist/acstride-cf ./cmd/acstride-cf
 - `problem` 事件表示正文和样例已经可用；`assets` 事件返回补齐本地图片后的题面。图片使用独立后台队列，不阻塞后续正文。每个事件的 `data` 包含 `index` 和结构化 `problem`。
 - 单题失败通过 `problemError` 事件报告，`data.error` 包含错误码及可重试标记，不影响其他题目。最后的 `result` 表示这批任务已结束；调用方需结合单题结果处理部分失败。
 - 同一会话可交错发送多个带不同 `requestId` 的请求。保持 stdin 开启并持续读取 stdout，收到对应 `result` 后可继续发送请求；关闭 stdin 取消未完成任务并回收下载进程。请求仍保留原有跨进程限速与验证、重定向及图片来源检查。
+
+## 发布版本
+
+发布带 `v` 前缀的 SemVer Release 后，GitHub Actions 会先测试，再构建六个平台的独立 CLI 压缩包、注入版本号并生成校验和，最后上传到该 Release。Alpha/Beta/RC 需要标记为 Pre-release。也支持先手动构建验收，再上传到草稿 Release。操作步骤与失败恢复见[发布指南](docs/releasing.md)。
