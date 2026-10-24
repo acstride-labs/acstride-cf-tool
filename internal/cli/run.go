@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -16,7 +17,7 @@ import (
 	"github.com/acstride-labs/acstride-cf-tool/internal/core"
 )
 
-var Version = "0.2.0"
+var Version = "0.3.0"
 
 type Envelope struct {
 	Protocol  int         `json:"protocol"`
@@ -33,6 +34,8 @@ type App struct {
 type options struct {
 	requestID, output, stateDir, handle, contest, problem, file, languageID, expectedHash string
 	publicHelper                                                                          string
+	assetsDir                                                                             string
+	bundled                                                                               bool
 	allRows                                                                               bool
 	refresh, stream, experimental, confirm, sessionStdin, credentialsStdin, store         bool
 	count, from                                                                           int
@@ -54,6 +57,8 @@ func parse(args []string) (options, []string, error) {
 	f.StringVar(&o.languageID, "language-id", "", "official language ID")
 	f.StringVar(&o.expectedHash, "expected-sha256", "", "confirmed source SHA256")
 	f.StringVar(&o.publicHelper, "public-helper", "", "absolute bundled anonymous downloader path")
+	f.StringVar(&o.assetsDir, "assets-dir", "", "explicit statement image cache root")
+	f.BoolVar(&o.bundled, "bundled", false, "require the install-relative anonymous transport")
 	f.BoolVar(&o.allRows, "all-rows", false, "read all ranking rows, response size limit still applies")
 	f.BoolVar(&o.refresh, "refresh", false, "refresh cache")
 	f.BoolVar(&o.stream, "stream", false, "NDJSON progress")
@@ -111,7 +116,13 @@ func parse(args []string) (options, []string, error) {
 	return o, positional, nil
 }
 func Run(ctx context.Context, args []string, in io.Reader, out, diagnostics io.Writer) int {
-	return (&App{Client: core.New(), Secrets: core.KeyringStore{}}).Run(ctx, args, in, out, diagnostics)
+	client := core.New()
+	cache, err := os.UserCacheDir()
+	if err != nil {
+		cache = os.TempDir()
+	}
+	client.Pace = core.SharedPacer(filepath.Join(cache, "acstride-cf-tool", "network"), 2100*time.Millisecond)
+	return (&App{Client: client, Secrets: core.KeyringStore{}}).Run(ctx, args, in, out, diagnostics)
 }
 func (a *App) Run(ctx context.Context, args []string, in io.Reader, out, diagnostics io.Writer) int {
 	if len(args) == 1 {
@@ -138,6 +149,13 @@ func (a *App) Run(ctx context.Context, args []string, in io.Reader, out, diagnos
 	}
 	ctx, cancel := context.WithTimeout(ctx, o.timeout)
 	defer cancel()
+	if o.bundled {
+		o.publicHelper, e = core.BundledPublicHelper()
+		if e != nil {
+			_ = send("result", nil, e)
+			return 1
+		}
+	}
 	if o.publicHelper != "" {
 		a.Client.ReadPublic = core.ExternalPublicHelper(o.publicHelper)
 	}
@@ -199,13 +217,13 @@ func (a *App) session(o options, in io.Reader) (core.Session, error) {
 }
 func (a *App) execute(ctx context.Context, o options, p []string, in io.Reader, progress func(core.ImportItem)) (any, error) {
 	if len(p) == 0 || len(p) == 1 && (p[0] == "help" || p[0] == "-h") {
-		return map[string]any{"name": "acstride-cf", "version": Version, "commands": []string{"capabilities", "doctor", "contest info ID", "contest download ID --output DIR", "problem fetch ID INDEX", "problem page ID INDEX", "submissions list --handle HANDLE [--contest ID]", "standings list ID", "languages list --contest ID --experimental", "session login --credentials-stdin --experimental --store", "session check --experimental", "session forget", "receipt show ID", "receipt reconcile ID --experimental", "receipt abandon ID --confirm", "submission watch --contest ID --handle HANDLE --submission-id ID", "submit --contest ID --problem INDEX --file FILE --language-id ID --experimental --confirm"}}, nil
+		return map[string]any{"name": "acstride-cf", "version": Version, "commands": []string{"capabilities", "doctor", "contest info ID", "contest download ID --output DIR", "problem fetch ID INDEX", "problem read ID INDEX --assets-dir DIR", "problem page ID INDEX", "submissions list --handle HANDLE [--contest ID]", "standings list ID", "languages list --contest ID --experimental", "session login --credentials-stdin --experimental --store", "session check --experimental", "session forget", "receipt show ID", "receipt reconcile ID --experimental", "receipt abandon ID --confirm", "submission watch --contest ID --handle HANDLE --submission-id ID", "submit --contest ID --problem INDEX --file FILE --language-id ID --experimental --confirm"}}, nil
 	}
 	if len(p) == 1 && (p[0] == "--version" || p[0] == "version") {
 		return map[string]string{"version": Version}, nil
 	}
 	if len(p) == 1 && p[0] == "capabilities" {
-		return map[string]any{"version": Version, "protocol": 1, "anonymous": []string{"contest.info", "contest.download", "problem.fetch", "problem.page", "submissions.list", "standings.list", "submission.watch", "api"}, "experimental": []string{"session.login", "session.check", "languages.list", "submit", "receipt.reconcile"}, "automaticSubmissionVerified": false, "nonInteractive": true, "selfUpdate": false, "secretStorage": "OS keyring; transient stdin session also supported", "statementFormat": "sanitized-html-and-text"}, nil
+		return map[string]any{"version": Version, "protocol": 1, "anonymous": []string{"contest.info", "contest.download", "problem.fetch", "problem.read", "problem.page", "submissions.list", "standings.list", "submission.watch", "api"}, "experimental": []string{"session.login", "session.check", "languages.list", "submit", "receipt.reconcile"}, "automaticSubmissionVerified": false, "nonInteractive": true, "selfUpdate": false, "secretStorage": "OS keyring; transient stdin session also supported", "statementFormat": "sanitized-html-and-text"}, nil
 	}
 	if len(p) == 1 && p[0] == "doctor" {
 		dir, e := core.StateDir()
@@ -266,7 +284,7 @@ func (a *App) execute(ctx context.Context, o options, p []string, in io.Reader, 
 			return nil, e
 		}
 		return a.Client.Download(ctx, id, o.output, o.refresh, progress)
-	case "problem fetch", "problem page":
+	case "problem fetch", "problem page", "problem read":
 		if len(p) != 4 {
 			return nil, core.Fail("invalid_argument", "Specify the contest ID and problem index.")
 		}
@@ -277,6 +295,9 @@ func (a *App) execute(ctx context.Context, o options, p []string, in io.Reader, 
 		idx, e := core.ProblemIndex(p[3])
 		if e != nil {
 			return nil, e
+		}
+		if p[1] == "read" {
+			return a.Client.ReadProblem(ctx, id, idx, o.assetsDir)
 		}
 		if p[1] == "page" {
 			return a.Client.ProblemPage(ctx, id, idx)

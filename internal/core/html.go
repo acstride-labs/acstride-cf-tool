@@ -99,7 +99,7 @@ func document(body string) (*html.Node, error) {
 	return n, nil
 }
 
-var tags = map[string]bool{"div": true, "span": true, "p": true, "pre": true, "code": true, "br": true, "b": true, "strong": true, "i": true, "em": true, "sub": true, "sup": true, "ul": true, "ol": true, "li": true, "table": true, "thead": true, "tbody": true, "tr": true, "th": true, "td": true, "a": true, "img": true, "h1": true, "h2": true, "h3": true, "h4": true, "blockquote": true}
+var tags = map[string]bool{"div": true, "span": true, "p": true, "pre": true, "code": true, "br": true, "b": true, "strong": true, "i": true, "em": true, "sub": true, "sup": true, "ul": true, "ol": true, "li": true, "table": true, "thead": true, "tbody": true, "tr": true, "th": true, "td": true, "a": true, "img": true, "h1": true, "h2": true, "h3": true, "h4": true, "blockquote": true, "u": true, "s": true, "hr": true}
 
 // Treat downloaded HTML as data: remove executable elements and all active attributes.
 func sanitize(n *html.Node) *html.Node {
@@ -111,7 +111,7 @@ func sanitize(n *html.Node) *html.Node {
 	}
 	out := &html.Node{Type: html.ElementNode, Data: n.Data, DataAtom: n.DataAtom}
 	for _, a := range n.Attr {
-		if a.Key == "class" || a.Key == "title" || a.Key == "alt" {
+		if a.Key == "class" || a.Key == "title" || a.Key == "alt" || a.Key == "width" || a.Key == "height" {
 			out.Attr = append(out.Attr, a)
 		}
 		if (n.Data == "a" && a.Key == "href") || (n.Data == "img" && a.Key == "src") {
@@ -121,7 +121,7 @@ func sanitize(n *html.Node) *html.Node {
 			}
 			base, _ := url.Parse(Host)
 			u = base.ResolveReference(u)
-			if u.Scheme == "https" && u.Host == "codeforces.com" && u.User == nil {
+			if officialURL(u) {
 				out.Attr = append(out.Attr, html.Attribute{Key: a.Key, Val: u.String()})
 			}
 		}
@@ -160,7 +160,7 @@ func ParseProblem(page Page, id int, index string) (Problem, error) {
 		if a == nil || b == nil {
 			return Problem{}, Fail("parse_error", "A sample is incomplete.")
 		}
-		samples = append(samples, Sample{Input: strings.Trim(text(a), "\r\n") + "\n", Output: strings.Trim(text(b), "\r\n") + "\n"})
+		samples = append(samples, Sample{Input: sampleText(a), Output: sampleText(b)})
 	}
 	var rendered bytes.Buffer
 	if e = html.Render(&rendered, sanitize(node)); e != nil {
@@ -243,4 +243,35 @@ func Handle(body string) (string, error) {
 		}
 	}
 	return "", Fail("parse_error", "Cannot identify the authenticated handle.")
+}
+
+// sampleText preserves Codeforces pre/br and test-example-line boundaries.
+func sampleText(n *html.Node) string {
+	var b strings.Builder
+	var walk func(*html.Node)
+	walk = func(n *html.Node) {
+		if n.Type == html.TextNode {
+			b.WriteString(n.Data)
+			return
+		}
+		if n.Data == "script" || n.Data == "style" {
+			return
+		}
+		if n.Data == "br" {
+			b.WriteByte('\n')
+			return
+		}
+		for ch := n.FirstChild; ch != nil; ch = ch.NextSibling {
+			walk(ch)
+		}
+		if n.Data == "div" && class(n, "test-example-line") {
+			b.WriteByte('\n')
+		}
+	}
+	walk(n)
+	value := strings.ReplaceAll(b.String(), "\r\n", "\n")
+	if !strings.HasSuffix(value, "\n") {
+		value += "\n"
+	}
+	return value
 }

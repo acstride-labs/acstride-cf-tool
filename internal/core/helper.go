@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -90,4 +91,22 @@ func ExternalPublicHelper(executable string) func(context.Context, string) (Page
 		}
 		return Page{HTML: data.HTML, URL: data.URL, Status: data.Status}, nil
 	}
+}
+
+// BundledPublicHelper resolves only immutable install-relative transport assets.
+func BundledPublicHelper() (string, error) {
+	exe, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	name := "cfide-downloader"
+	if runtime.GOOS == "windows" {
+		name += ".exe"
+	}
+	helper := filepath.Join(filepath.Dir(exe), "..", "downloader", "cfide-downloader", name)
+	info, err := os.Stat(helper)
+	if err != nil || !info.Mode().IsRegular() {
+		return "", Fail("helper_failed", "The bundled public transport is missing. Reinstall the matching editor package.")
+	}
+	return filepath.Abs(helper)
 }

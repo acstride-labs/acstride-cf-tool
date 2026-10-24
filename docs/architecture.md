@@ -8,7 +8,9 @@ VS Code UI / terminal caller
   internal/core (no stdout, no prompts, no global account)
      |-- public API reads
      |-- anonymous page -> DOM parser -> safe statement/samples -> rooted cache
-     |-- optional anonymous helper adapter (existing bundled curl_cffi)
+     |-- anonymous helper adapter (client-owned curl_cffi source)
+     |-- official image transport -> content-addressed rooted asset cache
+     |-- cross-process request pacing
      |-- opt-in session -> OS keyring / caller-owned transient stdin
      `-- opt-in submission -> target lock -> receipt/snapshot -> single POST
                                              `-> exact-source reconciliation
@@ -34,7 +36,7 @@ submission is not an advertised capability until account-owner testing proves
 login, restart persistence, exact receipt identity and interruption behavior.
 
 The VS Code extension continues to own native editors, templates, local runner,
-multi-contest scheduling, localization and statement asset caching. Website
+multi-contest scheduling, localization and workspace storage. Website
 accounts/payments/AI are outside this library. No listening ports, browser
 automation, browser extension, telemetry or cloud service is introduced.
 

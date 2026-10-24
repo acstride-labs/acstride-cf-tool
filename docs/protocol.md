@@ -79,3 +79,30 @@ disambiguate identical source submissions; it does not bypass verification.
 `receipt abandon --confirm` is the only explicit manual release, with a duplicate
 submission risk that the host must communicate. Receipt snapshots are local
 private files, not cloud uploads or billing artifacts.
+
+## Structured editor problem read (client 0.3+)
+
+`problem read ID INDEX --assets-dir DIR` returns the `Problem` fields directly
+plus RFC3339 `fetchedAt`, integer `imageFailures`, and an `assets` array of local
+content-addressed filenames. This is a fresh read, separate from `problem fetch`
+JSON caches. Omit the directory for no image downloads. Images are bounded to
+50 attempts and 5 MB each; duplicate URLs reuse a successful download. The explicit
+asset root is opened with os.Root and writes use atomic replacement, rejecting
+symlinks. Partial image failures preserve the statement and samples; failed image
+URLs may remain HTTPS references and offline clients should disable them.
+
+Successful image src values use `acstride-asset:SHA256.png` (jpg/gif/webp also
+supported). Editors validate the filename against `assets` and map it to local
+Webview resources; they must not interpret arbitrary filesystem paths from HTML.
+The CLI owns Codeforces DOM extraction and all network reads. A host sanitizer
+and CSP remain necessary because process output and cached HTML are untrusted.
+
+`--bundled` resolves the helper under the installation's sibling downloader
+folder and fails explicitly if absent. `--public-helper` is an advanced explicit
+absolute-path override. The editor uses only `--bundled`. Helper sources and
+pinned Python dependencies live in this repository's `packaging/` directory.
+
+Production CLI operations share request-start pacing across processes using an
+OS lock and last-start timestamp in the user cache directory. Offline commands
+do not create pacing files. A killed process releases its OS lock; timestamps
+cannot reserve an unbounded future delay. Each request still honors cancellation.

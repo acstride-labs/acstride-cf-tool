@@ -26,6 +26,7 @@ type Page struct {
 	Status int    `json:"status"`
 }
 type Client struct {
+	Pace       func(context.Context) error
 	ReadPublic func(context.Context, string) (Page, error)
 	HTTP       *http.Client
 	base       string
@@ -53,6 +54,9 @@ func New() *Client {
 	return c
 }
 func (c *Client) wait(ctx context.Context) error {
+	if c.Pace != nil {
+		return c.Pace(ctx)
+	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	d := time.Until(c.next)

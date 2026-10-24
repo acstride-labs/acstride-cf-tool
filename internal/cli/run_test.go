@@ -67,3 +67,27 @@ func TestSourceChangedRejectedBeforeSessionAccess(t *testing.T) {
 		t.Fatal(out.String())
 	}
 }
+
+func TestStructuredEditorProblemProtocol(t *testing.T) {
+	client := core.New()
+	client.ReadPublic = func(context.Context, string) (core.Page, error) {
+		return core.Page{URL: core.Host + "/contest/1/problem/A", Status: 200, HTML: `<div class="problem-statement"><div class="title">A. Sum</div><div class="sample-test"><div class="input"><pre>2 3</pre></div><div class="output"><pre>5</pre></div></div></div>`}, nil
+	}
+	secret := &secrets{}
+	app := &App{Client: client, Secrets: secret}
+	var out bytes.Buffer
+	assets := t.TempDir()
+	exit := app.Run(context.Background(), []string{"problem", "read", "1", "A", "--assets-dir", assets, "--request-id", "read-1"}, strings.NewReader(""), &out, &out)
+	if exit != 0 || secret.calls != 0 {
+		t.Fatalf("exit=%d secrets=%d %s", exit, secret.calls, out.String())
+	}
+	var result struct {
+		Protocol  int                `json:"protocol"`
+		RequestID string             `json:"requestId"`
+		OK        bool               `json:"ok"`
+		Data      core.EditorProblem `json:"data"`
+	}
+	if e := json.Unmarshal(out.Bytes(), &result); e != nil || !result.OK || result.RequestID != "read-1" || result.Data.ContestID != 1 || result.Data.Samples[0].Output != "5\n" {
+		t.Fatal(out.String(), e)
+	}
+}
