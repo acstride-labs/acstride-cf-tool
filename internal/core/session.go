@@ -30,9 +30,6 @@ type KeyringStore struct{}
 
 func (KeyringStore) Get() (Session, error) {
 	value, e := keyring.Get(secretService, "codeforces.com")
-	if e == keyring.ErrNotFound {
-		value, e = migrateStoredSession()
-	}
 	if e != nil {
 		return Session{}, Fail("session_unavailable", "No stored session is available from the operating system credential store.")
 	}
@@ -49,9 +46,6 @@ func (KeyringStore) Set(s Session) error {
 	return nil
 }
 func (KeyringStore) Delete() error {
-	if e := forgetPreviousSession(); e != nil {
-		return Fail("secret_store_unavailable", "Cannot remove the previous development session.")
-	}
 	e := keyring.Delete(secretService, "codeforces.com")
 	if e == keyring.ErrNotFound {
 		return nil

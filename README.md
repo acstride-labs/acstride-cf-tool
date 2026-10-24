@@ -276,8 +276,4 @@ go build -trimpath -o dist/codeforces-client ./cmd/codeforces-client
 
 发布带 `v` 前缀的 SemVer Release 后，GitHub Actions 会先测试，再构建六个平台的独立 CLI 压缩包、注入版本号并生成校验和，最后上传到该 Release。Alpha/Beta/RC 需要标记为 Pre-release。也支持先手动构建验收，再上传到草稿 Release。操作步骤与失败恢复见[发布指南](docs/releasing.md)。
 
-## 开发版本改名迁移
-
-新可执行文件及 Go 模块名统一为 `codeforces-client`。旧开发版本的本地提交回执会在首次访问时迁移到新状态目录；如果新旧目录同时存在，则停止并提示人工核对，不覆盖待确认提交。操作系统钥匙串中的有效会话在读取时迁移，密码不会写入文件。缓存与网络限流状态会重新建立。
-
-历史上游文档和 MIT 版权声明保留原作者项目名。已发布的旧 Release 不会重新命名或替换资产；新名称从下一次发布开始生效。
+新版本只使用 `codeforces-client` 命名，不读取旧开发版本的目录、配置或钥匙串条目。已发布的历史 Release 保持原样，新资产名从下一次发布生效。
