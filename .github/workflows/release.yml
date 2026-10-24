@@ -127,7 +127,7 @@ jobs:
           pattern: release-*
           path: dist/release
           merge-multiple: true
-      - name: Verify all platforms and generate archive checksums
+      - name: Verify archives, extract standalone binaries and checksum all downloads
         run: python packaging/release.py verify "$RELEASE_TAG"
       - uses: actions/upload-artifact@v4
         with:

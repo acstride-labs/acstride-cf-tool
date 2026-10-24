@@ -1,4 +1,4 @@
-"""Build and verify versioned standalone CLI release archives (stdlib only)."""
+"""Build and verify versioned standalone CLI release downloads (stdlib only)."""
 import argparse
 import hashlib
 import gzip
@@ -94,6 +94,7 @@ def build(tag, system, arch, output):
 def verify_archives(tag, output):
     release_version = version(tag)
     checksums = []
+    binaries = []
     revisions = set()
     required = {"LICENSE", "README.md", "THIRD_PARTY_NOTICES.txt", "BUILD.json"}
     for system, arch in TARGETS:
@@ -121,6 +122,12 @@ def verify_archives(tag, output):
             raise ValueError("Missing source revision")
         revisions.add(metadata["revision"])
         checksums.append(f"{digest(archive_path)}  {archive_path.name}\n")
+        direct = output / (name + (".exe" if system == "windows" else ""))
+        content = files[f"{name}/{binary}"]
+        if direct.exists() and direct.read_bytes() != content:
+            raise ValueError(f"Standalone binary differs from archive: {direct.name}")
+        binaries.append((direct, content))
+        checksums.append(f"{hashlib.sha256(content).hexdigest()}  {direct.name}\n")
     if len(revisions) != 1:
         raise ValueError("Release archives were built from different commits")
     if revisions != {run(["git", "rev-parse", "HEAD"])}:
@@ -128,8 +135,11 @@ def verify_archives(tag, output):
     allowed = {line.split("  ", 1)[1].strip() for line in checksums} | {"SHA256SUMS"}
     if {file.name for file in output.iterdir()} - allowed:
         raise ValueError("Unexpected files in release directory")
+    for direct, content in binaries:
+        direct.write_bytes(content)
+        direct.chmod(0o755)
     (output / "SHA256SUMS").write_text("".join(checksums), encoding="utf-8")
-    print("Verified all six release archives and wrote SHA256SUMS")
+    print("Verified six archives and matching standalone binaries; wrote SHA256SUMS")
 
 
 if __name__ == "__main__":

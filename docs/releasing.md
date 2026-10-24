@@ -37,6 +37,12 @@ acstride-cf_0.5.0-alpha.1_darwin_amd64.tar.gz
 acstride-cf_0.5.0-alpha.1_darwin_arm64.tar.gz
 acstride-cf_0.5.0-alpha.1_windows_amd64.zip
 acstride-cf_0.5.0-alpha.1_windows_arm64.zip
+acstride-cf_0.5.0-alpha.1_linux_amd64
+acstride-cf_0.5.0-alpha.1_linux_arm64
+acstride-cf_0.5.0-alpha.1_darwin_amd64
+acstride-cf_0.5.0-alpha.1_darwin_arm64
+acstride-cf_0.5.0-alpha.1_windows_amd64.exe
+acstride-cf_0.5.0-alpha.1_windows_arm64.exe
 SHA256SUMS
 ```
 
@@ -48,8 +54,13 @@ compiler and binary checksum. The software release version does not change
 `protocol: 1`. The source's default `Version` remains a development-build fallback;
 it is not the authority for a tagged release.
 
-Verify downloaded archives using `sha256sum -c SHA256SUMS` on Linux or
-`shasum -a 256 -c SHA256SUMS` on macOS (download all six archives for the full check).
+Standalone executables are extracted from the verified archives, never rebuilt separately.
+Rename the selected download to `acstride-cf` (`acstride-cf.exe` on Windows).
+On macOS/Linux, run `chmod +x ./acstride-cf` after downloading. Choose the full
+archive for license notices and build metadata. SHA256SUMS covers all 12 downloads.
+
+Verify downloaded files using `sha256sum -c SHA256SUMS` on Linux or
+`shasum -a 256 -c SHA256SUMS` on macOS (download all 12 files for the full check).
 On PowerShell, compare `Get-FileHash <archive> -Algorithm SHA256` with its entry.
 
 These are **standalone Go CLI archives**. They do not include the optional frozen

@@ -62,9 +62,21 @@ class ReleaseTests(unittest.TestCase):
             for line in (folder / "SHA256SUMS").read_text().splitlines():
                 checksum, name = line.split("  ")
                 self.assertEqual(checksum, release.digest(folder / name))
-            self.assertEqual(len((folder / "SHA256SUMS").read_text().splitlines()), 6)
+            self.assertEqual(len((folder / "SHA256SUMS").read_text().splitlines()), 12)
             (folder / "unrelated.txt").write_text("must not publish")
             with self.assertRaisesRegex(ValueError, "Unexpected files"):
+                release.verify_archives(tag, folder)
+
+    def test_standalone_binary_must_match_archive(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            tag = self.archives(folder)
+            release.verify_archives(tag, folder)
+            for system, arch in release.TARGETS:
+                direct = folder / (f"acstride-cf_{tag[1:]}_{system}_{arch}" + (".exe" if system == "windows" else ""))
+                self.assertEqual(direct.read_bytes(), b"test binary")
+            direct.write_bytes(b"changed binary")
+            with self.assertRaisesRegex(ValueError, "differs from archive"):
                 release.verify_archives(tag, folder)
 
     def test_missing_platform_blocks_release(self):
@@ -110,7 +122,7 @@ class ReleaseTests(unittest.TestCase):
                 uploader.upload(tag, folder)
                 args = gh.call_args.args
                 self.assertEqual(args[:3], ("release", "upload", tag))
-                self.assertEqual(len(args[3:-2]), 7)
+                self.assertEqual(len(args[3:-2]), 13)
                 self.assertNotIn("--clobber", args)
 
     def test_tag_move_blocks_upload(self):
