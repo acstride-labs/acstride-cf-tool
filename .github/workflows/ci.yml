@@ -15,6 +15,10 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python packaging/test-public-fetch.py
       - run: go mod verify
       - run: go vet ./...
       - run: go test -race ./...

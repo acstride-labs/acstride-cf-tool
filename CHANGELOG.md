@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0
+
+- Add persistent anonymous NDJSON reads, a lightweight contest problem list, and ordered first-problem-then-two-worker downloads.
+- Publish text/samples before background image completion. Reuse HTTP connections and a two-process curl transport pool; retain existing pacing and account/submission separation.
+
 ## 0.2.0
 
 - Add a standalone `acstride-cf` CLI with protocol v1 JSON/NDJSON, request IDs,

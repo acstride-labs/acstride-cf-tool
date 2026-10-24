@@ -46,34 +46,7 @@ func ExternalPublicHelper(executable string) func(context.Context, string) (Page
 			}
 			return Page{}, Fail("helper_failed", "The anonymous public helper failed. Verify the bundled executable for this platform.")
 		}
-		var data struct {
-			HTML   string `json:"html"`
-			URL    string `json:"url"`
-			Status int    `json:"status"`
-			Error  string `json:"error"`
-		}
-		if json.Unmarshal(out.Bytes(), &data) != nil || data.Error != "" {
-			return Page{}, Fail("helper_failed", "The anonymous public helper returned an invalid response.")
-		}
-		if data.URL != Host+path {
-			return Page{}, Fail("unexpected_redirect", "The anonymous helper returned a different resource.")
-		}
-		if verification(data.HTML) {
-			return Page{}, Fail("verification_required", "Codeforces requires site verification. Use the official website.")
-		}
-		if data.Status == 403 {
-			return Page{}, Fail("access_denied", "Codeforces refused the anonymous request.")
-		}
-		if data.Status == 404 {
-			return Page{}, Fail("not_found", "Problem is unavailable or unreleased.")
-		}
-		if data.Status == 429 {
-			return Page{}, &Error{Code: "rate_limited", Message: "Codeforces rate limit reached.", Retryable: true}
-		}
-		if data.Status != 200 {
-			return Page{}, Fail("http_error", "Anonymous download returned an HTTP error.")
-		}
-		return Page{HTML: data.HTML, URL: data.URL, Status: data.Status}, nil
+		return parsePublicHelper(out.Bytes(), path)
 	}
 }
 
@@ -93,4 +66,35 @@ func BundledPublicHelper() (string, error) {
 		return "", Fail("helper_failed", "The bundled public transport is missing. Reinstall the matching editor package.")
 	}
 	return filepath.Abs(helper)
+}
+
+func parsePublicHelper(raw []byte, path string) (Page, error) {
+	var data struct {
+		HTML   string `json:"html"`
+		URL    string `json:"url"`
+		Status int    `json:"status"`
+		Error  string `json:"error"`
+	}
+	if json.Unmarshal(raw, &data) != nil || data.Error != "" {
+		return Page{}, Fail("helper_failed", "The anonymous public helper returned an invalid response.")
+	}
+	if data.URL != Host+path {
+		return Page{}, Fail("unexpected_redirect", "The anonymous helper returned a different resource.")
+	}
+	if verification(data.HTML) {
+		return Page{}, Fail("verification_required", "Codeforces requires site verification. Use the official website.")
+	}
+	if data.Status == 403 {
+		return Page{}, Fail("access_denied", "Codeforces refused the anonymous request.")
+	}
+	if data.Status == 404 {
+		return Page{}, Fail("not_found", "Problem is unavailable or unreleased.")
+	}
+	if data.Status == 429 {
+		return Page{}, &Error{Code: "rate_limited", Message: "Codeforces rate limit reached.", Retryable: true}
+	}
+	if data.Status != 200 {
+		return Page{}, Fail("http_error", "Anonymous download returned an HTTP error.")
+	}
+	return Page{HTML: data.HTML, URL: data.URL, Status: data.Status}, nil
 }

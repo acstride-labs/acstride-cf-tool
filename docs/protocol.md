@@ -1,6 +1,6 @@
 # Protocol v1
 
-One CLI invocation is one cancellable operation. No HTTP server or daemon runs.
+Single-shot CLI invocations perform one cancellable operation. Editors may use the persistent read-only `serve` mode described below; no HTTP listener is opened.
 stdout is UTF-8 JSON/NDJSON; stderr is diagnostics only. No ANSI escapes, prompts,
 passwords, cookies or raw server error pages are printed. `problem page` is an
 explicit exception for raw HTML as a successful data payload, not diagnostics.
@@ -109,3 +109,18 @@ cannot reserve an unbounded future delay. Each request still honors cancellation
 ## Confirmed account binding (0.4+)
 
 Editors pass `submit --expected-handle HANDLE` with the account displayed in their confirmation dialog. After loading the session, the CLI rejects a mismatch before any form request or POST. This prevents another editor window or terminal login from changing the confirmed account between review and sending. Standalone callers may omit the flag when no separate account confirmation exists.
+
+## Persistent anonymous reads (0.5)
+
+Start `acstride-cf serve --bundled`. Each stdin line is an object with a unique `requestId` and one of these commands:
+
+| command | fields | output |
+| --- | --- | --- |
+| `capabilities` | none | supported anonymous operations |
+| `contest.problems` | `contestId` | contest, problems, empty rows |
+| `api` | `method`, optional `contestId`, `handle`, `count` | public API result; only contest.list, contest.status, contest.standings |
+| `download` | `contestId`, ordered `indices`, `assetsDir` | problem / assets / problemError events, then result |
+
+Every output uses the existing protocol-1 envelope and request correlation. Download event data is `{index, problem}` or `{index, error}`. The first problem's text/samples finish before the remaining FIFO queue runs with two consumers. Images use a separate two-worker queue. Completion order is not guaranteed. A failed first problem does not starve the remaining queue. Problem errors remain per-item and do not discard successful results. Download deadlines are ten minutes; other requests have a 25-second deadline. The consumer must keep stdin open until it has received the desired results; EOF cancels unfinished work.
+
+The server only performs anonymous reads and asset cache writes. It never exposes session login, source submission, cookies or credentials through this channel. Single-shot CLI commands remain available for explicit account and submission actions.

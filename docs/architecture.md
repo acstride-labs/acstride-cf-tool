@@ -44,3 +44,5 @@ Vendored upstream dependencies and dep manifests were replaced with versioned
 Go modules/checksums. Their previous versions remain in Git history. Generated
 license notices accompany distributed binaries. The fork retains MIT; no blanket
 noncommercial restriction is applied to upstream MIT code.
+
+The editor uses a long-lived read-only NDJSON session. CF Tool owns FIFO text scheduling (first item alone, then two consumers), the independent image queue, and two persistent anonymous transport processes. Go's HTTP client and each transport's curl session reuse connections. The editor persists each text event immediately, and replaces only the cached statement on an asset event. Full rankings are not fetched for problem discovery. Existing request pacing and allowed-origin checks apply to both phases.

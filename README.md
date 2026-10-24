@@ -260,3 +260,14 @@ go build -trimpath -o dist/acstride-cf ./cmd/acstride-cf
 ### 0.3.1 数据完整性修复
 
 移除 API、题面、题目缓存、下载器输出和图片的固定字节上限，以及榜单分页数量/偏移的客户端上限。大榜单不会再因超过 8 MB 被拒绝。超时、取消、限流、官方域名校验和提交确认机制继续生效；可按需分页减少内存占用。Codeforces 服务端本身仍可能限制查询数量。
+
+## 编辑器常驻下载会话
+
+`acstride-cf serve --bundled` 提供匿名只读的 NDJSON 会话，多个请求共用 Go HTTP 连接池和两个常驻匿名下载器；每个下载器复用自己的 curl 会话。原有单次 CLI 命令保持兼容。此接口不接收登录、提交或其他写入网站的操作。
+
+- 获取比赛题目列表：`{"requestId":"list-1","command":"contest.problems","contestId":1234}`。请求 `contest.standings?from=1&count=1`，仅返回比赛信息和题目列表，完整排名仍按需请求。
+- 导入比赛：`{"requestId":"download-1","command":"download","contestId":1234,"indices":["A","B","C","D"],"assetsDir":"/absolute/cache/assets"}`。索引按题目顺序传入，首题正文和样例先独立获取，之后用两个 FIFO 消费者下载剩余题目；结果可能按完成先后返回。
+- 导入单题：同一命令只传一个索引。
+- `problem` 事件表示正文和样例已经可用；`assets` 事件返回补齐本地图片后的题面。图片使用独立后台队列，不阻塞后续正文。每个事件的 `data` 包含 `index` 和结构化 `problem`。
+- 单题失败通过 `problemError` 事件报告，`data.error` 包含错误码及可重试标记，不影响其他题目。最后的 `result` 表示这批任务已结束；调用方需结合单题结果处理部分失败。
+- 同一会话可交错发送多个带不同 `requestId` 的请求。保持 stdin 开启并持续读取 stdout，收到对应 `result` 后可继续发送请求；关闭 stdin 取消未完成任务并回收下载进程。请求仍保留原有跨进程限速与验证、重定向及图片来源检查。

@@ -32,7 +32,7 @@ type EditorProblem struct {
 
 // ReadProblem owns parsing and asset transport. It writes only content-addressed
 // image files in the explicit asset root, never solutions or custom tests.
-func (c *Client) ReadProblem(ctx context.Context, id int, index, assetsDir string) (EditorProblem, error) {
+func (c *Client) ReadProblemText(ctx context.Context, id int, index string) (EditorProblem, error) {
 	if id < 1 || id > 999999999 {
 		return EditorProblem{}, Fail("invalid_argument", "Invalid contest ID.")
 	}
@@ -46,6 +46,20 @@ func (c *Client) ReadProblem(ctx context.Context, id int, index, assetsDir strin
 		return EditorProblem{}, err
 	}
 	result := EditorProblem{Problem: p, FetchedAt: time.Now().UTC(), Assets: []string{}}
+	return result, nil
+}
+
+// ReadProblem retains the synchronous CLI API; editor streams use the two phases directly.
+func (c *Client) ReadProblem(ctx context.Context, id int, index, assetsDir string) (EditorProblem, error) {
+	result, err := c.ReadProblemText(ctx, id, index)
+	if err != nil || assetsDir == "" {
+		return result, err
+	}
+	return c.CacheProblemImages(ctx, result, assetsDir)
+}
+
+func (c *Client) CacheProblemImages(ctx context.Context, result EditorProblem, assetsDir string) (EditorProblem, error) {
+	var err error
 	if assetsDir == "" {
 		return result, nil
 	}
@@ -57,7 +71,7 @@ func (c *Client) ReadProblem(ctx context.Context, id int, index, assetsDir strin
 		return result, err
 	}
 	defer root.Close()
-	doc, err := document(p.StatementHTML)
+	doc, err := document(result.StatementHTML)
 	if err != nil {
 		return result, err
 	}

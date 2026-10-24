@@ -33,39 +33,51 @@ def main():
                           "embedded": bool(getattr(sys, "frozen", False)),
                           "curlCffi": curl_cffi.__version__, "caBundle": True}))
         return
-    if sys.argv[1:]:
+    if sys.argv[1:] and sys.argv[1:] != ["--serve"]:
         print(json.dumps({"error": "invalid_arguments"}))
         return
-    request = json.loads(sys.stdin.read(4096))
+    server = sys.argv[1:] == ["--serve"]
+    with requests.Session(impersonate="chrome", verify=certifi.where()) as session:
+        if server:
+            for line in sys.stdin:
+                try:
+                    fetch(session, json.loads(line))
+                except Exception:
+                    print(json.dumps({"error": "request_failed"}))
+                sys.stdout.flush()
+        else:
+            fetch(session, json.loads(sys.stdin.read(4096)))
+
+
+def fetch(session, request):
     path = request.get("path", "")
     if not re.fullmatch(r"/contest/[1-9][0-9]{0,8}/problem/[A-Za-z0-9][A-Za-z0-9_-]{0,31}", path):
         print(json.dumps({"error": "invalid_problem_path"}))
         return
     url = "https://codeforces.com" + path
-    with requests.Session(impersonate="chrome", verify=certifi.where()) as session:
-        for _ in range(4):
-            # Only anonymous, public GETs. Never persist or load any account session.
-            response = session.get(url, timeout=20, allow_redirects=False, stream=True)
-            try:
-                if response.status_code in (301, 302, 303, 307, 308):
-                    target = urljoin(url, response.headers.get("location", ""))
-                    parsed = urlparse(target)
-                    if parsed.scheme != "https" or parsed.netloc != "codeforces.com":
-                        print(json.dumps({"error": "external_redirect"}))
-                        return
-                    if not re.fullmatch(r"/contest/[1-9][0-9]{0,8}/problem/[A-Za-z0-9][A-Za-z0-9_-]{0,31}", parsed.path):
-                        print(json.dumps({"error": "unexpected_redirect"}))
-                        return
-                    url = target
-                    continue
-                chunks = []
-                for chunk in response.iter_content():
-                    chunks.append(chunk)
-                html = b"".join(chunks).decode("utf-8", errors="replace")
-                print(json.dumps({"status": response.status_code, "url": url, "html": html}, ensure_ascii=False))
-                return
-            finally:
-                response.close()
+    for _ in range(4):
+        # Only anonymous, public GETs. Never persist or load any account session.
+        response = session.get(url, timeout=20, allow_redirects=False, stream=True)
+        try:
+            if response.status_code in (301, 302, 303, 307, 308):
+                target = urljoin(url, response.headers.get("location", ""))
+                parsed = urlparse(target)
+                if parsed.scheme != "https" or parsed.netloc != "codeforces.com":
+                    print(json.dumps({"error": "external_redirect"}))
+                    return
+                if not re.fullmatch(r"/contest/[1-9][0-9]{0,8}/problem/[A-Za-z0-9][A-Za-z0-9_-]{0,31}", parsed.path):
+                    print(json.dumps({"error": "unexpected_redirect"}))
+                    return
+                url = target
+                continue
+            chunks = []
+            for chunk in response.iter_content():
+                chunks.append(chunk)
+            html = b"".join(chunks).decode("utf-8", errors="replace")
+            print(json.dumps({"status": response.status_code, "url": url, "html": html}, ensure_ascii=False))
+            return
+        finally:
+            response.close()
     print(json.dumps({"error": "too_many_redirects"}))
 
 

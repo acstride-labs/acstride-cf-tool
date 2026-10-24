@@ -17,7 +17,7 @@ import (
 	"github.com/acstride-labs/acstride-cf-tool/internal/core"
 )
 
-var Version = "0.4.0"
+var Version = "0.5.0"
 
 type Envelope struct {
 	Protocol  int         `json:"protocol"`
@@ -149,6 +149,17 @@ func (a *App) Run(ctx context.Context, args []string, in io.Reader, out, diagnos
 		_ = send("result", nil, e)
 		return 2
 	}
+	if len(pos) == 1 && pos[0] == "serve" {
+		helper := o.publicHelper
+		if o.bundled {
+			helper, e = core.BundledPublicHelper()
+			if e != nil {
+				_ = send("result", nil, e)
+				return 1
+			}
+		}
+		return a.serve(ctx, in, out, helper)
+	}
 	ctx, cancel := context.WithTimeout(ctx, o.timeout)
 	defer cancel()
 	if o.bundled {
@@ -219,13 +230,13 @@ func (a *App) session(o options, in io.Reader) (core.Session, error) {
 }
 func (a *App) execute(ctx context.Context, o options, p []string, in io.Reader, progress func(core.ImportItem)) (any, error) {
 	if len(p) == 0 || len(p) == 1 && (p[0] == "help" || p[0] == "-h") {
-		return map[string]any{"name": "acstride-cf", "version": Version, "commands": []string{"capabilities", "doctor", "contest info ID", "contest download ID --output DIR", "problem fetch ID INDEX", "problem read ID INDEX --assets-dir DIR", "problem page ID INDEX", "submissions list --handle HANDLE [--contest ID]", "standings list ID", "languages list --contest ID --experimental", "session login --credentials-stdin --experimental --store", "session check --experimental", "session forget", "receipt show ID", "receipt reconcile ID --experimental", "receipt abandon ID --confirm", "submission watch --contest ID --handle HANDLE --submission-id ID", "submit --contest ID --problem INDEX --file FILE --language-id ID --experimental --confirm"}}, nil
+		return map[string]any{"name": "acstride-cf", "version": Version, "commands": []string{"serve --bundled", "contest problems ID", "capabilities", "doctor", "contest info ID", "contest download ID --output DIR", "problem fetch ID INDEX", "problem read ID INDEX --assets-dir DIR", "problem page ID INDEX", "submissions list --handle HANDLE [--contest ID]", "standings list ID", "languages list --contest ID --experimental", "session login --credentials-stdin --experimental --store", "session check --experimental", "session forget", "receipt show ID", "receipt reconcile ID --experimental", "receipt abandon ID --confirm", "submission watch --contest ID --handle HANDLE --submission-id ID", "submit --contest ID --problem INDEX --file FILE --language-id ID --experimental --confirm"}}, nil
 	}
 	if len(p) == 1 && (p[0] == "--version" || p[0] == "version") {
 		return map[string]string{"version": Version}, nil
 	}
 	if len(p) == 1 && p[0] == "capabilities" {
-		return map[string]any{"version": Version, "protocol": 1, "anonymous": []string{"contest.info", "contest.download", "problem.fetch", "problem.read", "problem.page", "submissions.list", "standings.list", "submission.watch", "api"}, "experimental": []string{"session.login", "session.check", "languages.list", "submit", "receipt.reconcile"}, "automaticSubmissionVerified": false, "nonInteractive": true, "selfUpdate": false, "secretStorage": "OS keyring; transient stdin session also supported", "statementFormat": "sanitized-html-and-text"}, nil
+		return map[string]any{"version": Version, "protocol": 1, "anonymous": []string{"contest.problems", "download.stream", "contest.info", "contest.download", "problem.fetch", "problem.read", "problem.page", "submissions.list", "standings.list", "submission.watch", "api"}, "experimental": []string{"session.login", "session.check", "languages.list", "submit", "receipt.reconcile"}, "automaticSubmissionVerified": false, "nonInteractive": true, "selfUpdate": false, "secretStorage": "OS keyring; transient stdin session also supported", "statementFormat": "sanitized-html-and-text"}, nil
 	}
 	if len(p) == 1 && p[0] == "doctor" {
 		dir, e := core.StateDir()
@@ -268,6 +279,15 @@ func (a *App) execute(ctx context.Context, o options, p []string, in io.Reader, 
 		return nil, core.Fail("invalid_argument", "This API method is not exposed by the read-only bridge.")
 	}
 	switch command {
+	case "contest problems":
+		if len(p) != 3 {
+			return nil, core.Fail("invalid_argument", "Specify the contest ID.")
+		}
+		id, e := getID(p[2])
+		if e != nil {
+			return nil, e
+		}
+		return a.Client.ContestProblems(ctx, id)
 	case "contest info":
 		if len(p) != 3 {
 			return nil, core.Fail("invalid_argument", "Specify the contest ID.")
