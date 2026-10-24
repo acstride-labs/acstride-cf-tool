@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/acstride-labs/acstride-cf-tool/internal/core"
+	"github.com/acstride-labs/codeforces-client/internal/core"
 	"net/http"
 	"os"
 	"path/filepath"

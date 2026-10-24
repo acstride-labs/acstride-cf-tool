@@ -3,8 +3,8 @@ package cmd
 import (
 	"time"
 
-	"github.com/acstride-labs/acstride-cf-tool/client"
-	"github.com/acstride-labs/acstride-cf-tool/config"
+	"github.com/acstride-labs/codeforces-client/client"
+	"github.com/acstride-labs/codeforces-client/config"
 )
 
 // Race command

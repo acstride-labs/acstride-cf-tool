@@ -10,8 +10,8 @@ import (
 	"github.com/fatih/color"
 	ansi "github.com/k0kubun/go-ansi"
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/acstride-labs/acstride-cf-tool/client"
-	"github.com/acstride-labs/acstride-cf-tool/util"
+	"github.com/acstride-labs/codeforces-client/client"
+	"github.com/acstride-labs/codeforces-client/util"
 )
 
 // AddTemplate add template

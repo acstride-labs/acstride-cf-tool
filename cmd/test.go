@@ -15,8 +15,8 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/acstride-labs/acstride-cf-tool/config"
-	"github.com/acstride-labs/acstride-cf-tool/util"
+	"github.com/acstride-labs/codeforces-client/config"
+	"github.com/acstride-labs/codeforces-client/util"
 	"github.com/fatih/color"
 	ansi "github.com/k0kubun/go-ansi"
 	"github.com/sergi/go-diff/diffmatchpatch"

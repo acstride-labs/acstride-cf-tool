@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/acstride-labs/acstride-cf-tool/internal/core"
-	"github.com/acstride-labs/acstride-cf-tool/util"
+	"github.com/acstride-labs/codeforces-client/internal/core"
+	"github.com/acstride-labs/codeforces-client/util"
 )
 
 func findSample(body []byte) (input, output [][]byte, err error) {

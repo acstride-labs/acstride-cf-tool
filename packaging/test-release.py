@@ -24,11 +24,11 @@ class ReleaseTests(unittest.TestCase):
         tag = "v0.5.0-alpha.1"
         revision = release.run(["git", "rev-parse", "HEAD"])
         for system, arch in release.TARGETS:
-            name = f"acstride-cf_0.5.0-alpha.1_{system}_{arch}"
+            name = f"codeforces-client_0.5.0-alpha.1_{system}_{arch}"
             with tempfile.TemporaryDirectory() as temporary:
                 stage = Path(temporary) / name
                 stage.mkdir()
-                binary = stage / ("acstride-cf.exe" if system == "windows" else "acstride-cf")
+                binary = stage / ("codeforces-client.exe" if system == "windows" else "codeforces-client")
                 binary.write_bytes(b"test binary")
                 binary.chmod(0o755)
                 for file in ["LICENSE", "README.md", "THIRD_PARTY_NOTICES.txt"]:
@@ -43,7 +43,7 @@ class ReleaseTests(unittest.TestCase):
             root = Path(temporary)
             folder = root / "package"
             folder.mkdir()
-            file = folder / "acstride-cf"
+            file = folder / "codeforces-client"
             file.write_bytes(b"same program")
             file.chmod(0o755)
             for system, extension in [("darwin", ".tar.gz"), ("windows", ".zip")]:
@@ -73,7 +73,7 @@ class ReleaseTests(unittest.TestCase):
             tag = self.archives(folder)
             release.verify_archives(tag, folder)
             for system, arch in release.TARGETS:
-                direct = folder / (f"acstride-cf_{tag[1:]}_{system}_{arch}" + (".exe" if system == "windows" else ""))
+                direct = folder / (f"codeforces-client_{tag[1:]}_{system}_{arch}" + (".exe" if system == "windows" else ""))
                 self.assertEqual(direct.read_bytes(), b"test binary")
             direct.write_bytes(b"changed binary")
             with self.assertRaisesRegex(ValueError, "differs from archive"):
@@ -94,7 +94,7 @@ class ReleaseTests(unittest.TestCase):
             release.verify_archives(tag, folder)
             metadata = {"tag_name": tag, "prerelease": True, "immutable": True,
                 "assets": [{"name": file.name, "digest": "sha256:" + release.digest(file)} for file in folder.iterdir()]}
-            with patch.dict("os.environ", {"GITHUB_REPOSITORY": "acstride-labs/acstride-cf-tool"}):
+            with patch.dict("os.environ", {"GITHUB_REPOSITORY": "acstride-labs/codeforces-client"}):
                 with patch.object(uploader, "gh", side_effect=[json.dumps(metadata), json.dumps({"sha": release.run(["git", "rev-parse", "HEAD"])})]) as gh:
                     uploader.upload(tag, folder)
                     self.assertEqual(gh.call_count, 2)
@@ -108,7 +108,7 @@ class ReleaseTests(unittest.TestCase):
             folder = Path(temporary)
             tag = self.archives(folder)
             metadata = {"tag_name": tag, "prerelease": True, "immutable": True, "assets": []}
-            with patch.dict("os.environ", {"GITHUB_REPOSITORY": "acstride-labs/acstride-cf-tool"}), patch.object(uploader, "gh", side_effect=[json.dumps(metadata), json.dumps({"sha": release.run(["git", "rev-parse", "HEAD"])})]):
+            with patch.dict("os.environ", {"GITHUB_REPOSITORY": "acstride-labs/codeforces-client"}), patch.object(uploader, "gh", side_effect=[json.dumps(metadata), json.dumps({"sha": release.run(["git", "rev-parse", "HEAD"])})]):
                 with self.assertRaisesRegex(ValueError, "draft Release"):
                     uploader.upload(tag, folder)
 
@@ -118,7 +118,7 @@ class ReleaseTests(unittest.TestCase):
             tag = self.archives(folder)
             metadata = {"tag_name": tag, "prerelease": True, "immutable": False, "assets": []}
             responses = [json.dumps(metadata), json.dumps({"sha": release.run(["git", "rev-parse", "HEAD"])}), ""]
-            with patch.dict("os.environ", {"GITHUB_REPOSITORY": "acstride-labs/acstride-cf-tool"}), patch.object(uploader, "gh", side_effect=responses) as gh:
+            with patch.dict("os.environ", {"GITHUB_REPOSITORY": "acstride-labs/codeforces-client"}), patch.object(uploader, "gh", side_effect=responses) as gh:
                 uploader.upload(tag, folder)
                 args = gh.call_args.args
                 self.assertEqual(args[:3], ("release", "upload", tag))
@@ -130,7 +130,7 @@ class ReleaseTests(unittest.TestCase):
             folder = Path(temporary)
             tag = self.archives(folder)
             responses = [json.dumps({"tag_name": tag, "prerelease": True, "assets": []}), json.dumps({"sha": "0" * 40})]
-            with patch.dict("os.environ", {"GITHUB_REPOSITORY": "acstride-labs/acstride-cf-tool"}), patch.object(uploader, "gh", side_effect=responses):
+            with patch.dict("os.environ", {"GITHUB_REPOSITORY": "acstride-labs/codeforces-client"}), patch.object(uploader, "gh", side_effect=responses):
                 with self.assertRaisesRegex(ValueError, "tag moved"):
                     uploader.upload(tag, folder)
 
@@ -138,7 +138,7 @@ class ReleaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             folder = Path(temporary)
             tag = self.archives(folder)
-            with patch.dict("os.environ", {"GITHUB_REPOSITORY": "acstride-labs/acstride-cf-tool"}), patch.object(uploader, "gh", return_value=json.dumps({"tag_name": tag, "prerelease": False, "assets": []})):
+            with patch.dict("os.environ", {"GITHUB_REPOSITORY": "acstride-labs/codeforces-client"}), patch.object(uploader, "gh", return_value=json.dumps({"tag_name": tag, "prerelease": False, "assets": []})):
                 with self.assertRaisesRegex(ValueError, "prerelease flag"):
                     uploader.upload(tag, folder)
 

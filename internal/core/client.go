@@ -86,7 +86,7 @@ func (c *Client) Request(ctx context.Context, method, path string, form url.Valu
 	if err != nil {
 		return Page{}, err
 	}
-	req.Header.Set("User-Agent", "ACStride-CF/0.2 (+https://github.com/acstride-labs/acstride-cf-tool)")
+	req.Header.Set("User-Agent", "Codeforces-Client/0.2 (+https://github.com/acstride-labs/codeforces-client)")
 	req.Header.Set("Accept", "application/json,text/html;q=0.9")
 	if form != nil {
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")

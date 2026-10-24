@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/acstride-labs/acstride-cf-tool/internal/core"
+	"github.com/acstride-labs/codeforces-client/internal/core"
 )
 
 type readRequest struct {

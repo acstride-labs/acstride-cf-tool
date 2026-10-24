@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/acstride-labs/acstride-cf-tool/client"
-	"github.com/acstride-labs/acstride-cf-tool/config"
+	"github.com/acstride-labs/codeforces-client/client"
+	"github.com/acstride-labs/codeforces-client/config"
 	"github.com/docopt/docopt-go"
 )
 

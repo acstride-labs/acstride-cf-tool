@@ -7,7 +7,7 @@
 
 ## 0.2.0
 
-- Add a standalone `acstride-cf` CLI with protocol v1 JSON/NDJSON, request IDs,
+- Add a standalone `codeforces-client` CLI with protocol v1 JSON/NDJSON, request IDs,
   stable error codes, non-interactive parameters and signal/deadline cancellation.
 - Add anonymous contest metadata, sanitized statement/sample parsing, rooted
   per-contest/per-problem caches, incremental batch reads and partial failures.

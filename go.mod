@@ -1,4 +1,4 @@
-module github.com/acstride-labs/acstride-cf-tool
+module github.com/acstride-labs/codeforces-client
 
 go 1.26.0
 

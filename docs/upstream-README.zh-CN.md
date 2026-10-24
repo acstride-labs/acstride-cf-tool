@@ -6,7 +6,7 @@
 本分支尚未验证登录、人机验证或提交修复；下方文档介绍的是继承的上游实现，
 发布徽章和下载链接指向上游项目。
 
-相关项目：[VS Code 插件](https://github.com/acstride-labs/acstride-vscode-extension)、
+相关项目：[VS Code 插件](https://github.com/acstride-labs/codeforces-workbench)、
 [产品官网](https://github.com/acstride-labs/acstride-web)。
 
 [![Github release](https://img.shields.io/github/release/xalanq/cf-tool.svg)](https://github.com/xalanq/cf-tool/releases)

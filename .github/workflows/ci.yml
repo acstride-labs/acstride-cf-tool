@@ -42,7 +42,7 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Build standalone binary
-        run: go build -trimpath -ldflags="-s -w" -o dist/acstride-cf${{ matrix.suffix }} ./cmd/acstride-cf
+        run: go build -trimpath -ldflags="-s -w" -o dist/codeforces-client${{ matrix.suffix }} ./cmd/codeforces-client
         env:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
@@ -54,5 +54,5 @@ jobs:
         run: cd dist && sha256sum * > SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:
-          name: acstride-cf-${{ matrix.os }}-${{ matrix.arch }}
+          name: codeforces-client-${{ matrix.os }}-${{ matrix.arch }}
           path: dist/

@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/acstride-labs/acstride-cf-tool/internal/cli"
+	"github.com/acstride-labs/codeforces-client/internal/cli"
 	"os"
 	"os/signal"
 	"syscall"

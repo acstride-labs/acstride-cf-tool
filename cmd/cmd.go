@@ -10,9 +10,9 @@ import (
 
 	"github.com/docopt/docopt-go"
 
-	"github.com/acstride-labs/acstride-cf-tool/client"
-	"github.com/acstride-labs/acstride-cf-tool/config"
-	"github.com/acstride-labs/acstride-cf-tool/util"
+	"github.com/acstride-labs/codeforces-client/client"
+	"github.com/acstride-labs/codeforces-client/config"
+	"github.com/acstride-labs/codeforces-client/util"
 	"github.com/fatih/color"
 )
 

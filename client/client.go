@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/acstride-labs/acstride-cf-tool/cookiejar"
+	"github.com/acstride-labs/codeforces-client/cookiejar"
 	"github.com/fatih/color"
 )
 

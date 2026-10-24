@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/acstride-labs/acstride-cf-tool/internal/core"
+	"github.com/acstride-labs/codeforces-client/internal/core"
 )
 
 var Version = "0.5.0"
@@ -46,7 +46,7 @@ type options struct {
 
 func parse(args []string) (options, []string, error) {
 	var o options
-	f := flag.NewFlagSet("acstride-cf", flag.ContinueOnError)
+	f := flag.NewFlagSet("codeforces-client", flag.ContinueOnError)
 	f.SetOutput(io.Discard)
 	f.StringVar(&o.requestID, "request-id", "", "request correlation ID")
 	f.StringVar(&o.output, "output", "", "cache output root")
@@ -123,7 +123,7 @@ func Run(ctx context.Context, args []string, in io.Reader, out, diagnostics io.W
 	if err != nil {
 		cache = os.TempDir()
 	}
-	client.Pace = core.SharedPacer(filepath.Join(cache, "acstride-cf-tool", "network"), 2100*time.Millisecond)
+	client.Pace = core.SharedPacer(filepath.Join(cache, "codeforces-client", "network"), 2100*time.Millisecond)
 	return (&App{Client: client, Secrets: core.KeyringStore{}}).Run(ctx, args, in, out, diagnostics)
 }
 func (a *App) Run(ctx context.Context, args []string, in io.Reader, out, diagnostics io.Writer) int {
@@ -230,7 +230,7 @@ func (a *App) session(o options, in io.Reader) (core.Session, error) {
 }
 func (a *App) execute(ctx context.Context, o options, p []string, in io.Reader, progress func(core.ImportItem)) (any, error) {
 	if len(p) == 0 || len(p) == 1 && (p[0] == "help" || p[0] == "-h") {
-		return map[string]any{"name": "acstride-cf", "version": Version, "commands": []string{"serve --bundled", "contest problems ID", "capabilities", "doctor", "contest info ID", "contest download ID --output DIR", "problem fetch ID INDEX", "problem read ID INDEX --assets-dir DIR", "problem page ID INDEX", "submissions list --handle HANDLE [--contest ID]", "standings list ID", "languages list --contest ID --experimental", "session login --credentials-stdin --experimental --store", "session check --experimental", "session forget", "receipt show ID", "receipt reconcile ID --experimental", "receipt abandon ID --confirm", "submission watch --contest ID --handle HANDLE --submission-id ID", "submit --contest ID --problem INDEX --file FILE --language-id ID --experimental --confirm"}}, nil
+		return map[string]any{"name": "codeforces-client", "version": Version, "commands": []string{"serve --bundled", "contest problems ID", "capabilities", "doctor", "contest info ID", "contest download ID --output DIR", "problem fetch ID INDEX", "problem read ID INDEX --assets-dir DIR", "problem page ID INDEX", "submissions list --handle HANDLE [--contest ID]", "standings list ID", "languages list --contest ID --experimental", "session login --credentials-stdin --experimental --store", "session check --experimental", "session forget", "receipt show ID", "receipt reconcile ID --experimental", "receipt abandon ID --confirm", "submission watch --contest ID --handle HANDLE --submission-id ID", "submit --contest ID --problem INDEX --file FILE --language-id ID --experimental --confirm"}}, nil
 	}
 	if len(p) == 1 && (p[0] == "--version" || p[0] == "version") {
 		return map[string]string{"version": Version}, nil

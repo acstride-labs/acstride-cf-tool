@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/acstride-labs/acstride-cf-tool/client"
+	"github.com/acstride-labs/codeforces-client/client"
 	"github.com/fatih/color"
 	ansi "github.com/k0kubun/go-ansi"
 	"github.com/olekukonko/tablewriter"
