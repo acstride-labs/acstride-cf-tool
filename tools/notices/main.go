@@ -25,7 +25,7 @@ func main() {
 	}
 	dec := json.NewDecoder(bytes.NewReader(data))
 	var text strings.Builder
-	text.WriteString("Codeforces Client third-party module license notices\nGenerated from locked Go modules. Upstream CF Tool LICENSE is distributed separately.\n\n")
+	text.WriteString("Codeforces Client third-party module license notices\nGenerated from locked Go modules. Upstream Codeforces Client LICENSE is distributed separately.\n\n")
 	goLicense, e := os.ReadFile(filepath.Join(runtime.GOROOT(), "LICENSE"))
 	if e != nil {
 		panic(e)

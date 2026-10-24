@@ -32,7 +32,7 @@ func main() {
 			os.Exit(cli.Run(ctx, os.Args[1:], os.Stdin, os.Stdout, os.Stderr))
 		}
 	}
-	usage := `Codeforces Tool $%version%$ (cf). https://github.com/xalanq/cf-tool
+	usage := `Codeforces Client $%version%$ (cf). https://github.com/xalanq/cf-tool
 
 You should run "cf config" to configure your handle, password and code
 templates at first.
