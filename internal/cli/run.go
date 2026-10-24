@@ -17,7 +17,7 @@ import (
 	"github.com/acstride-labs/acstride-cf-tool/internal/core"
 )
 
-var Version = "0.3.1"
+var Version = "0.4.0"
 
 type Envelope struct {
 	Protocol  int         `json:"protocol"`
@@ -32,6 +32,7 @@ type App struct {
 	Secrets core.SecretStore
 }
 type options struct {
+	expectedHandle                                                                        string
 	requestID, output, stateDir, handle, contest, problem, file, languageID, expectedHash string
 	publicHelper                                                                          string
 	assetsDir                                                                             string
@@ -51,6 +52,7 @@ func parse(args []string) (options, []string, error) {
 	f.StringVar(&o.output, "output", "", "cache output root")
 	f.StringVar(&o.stateDir, "state-dir", "", "private receipt directory")
 	f.StringVar(&o.handle, "handle", "", "Codeforces handle")
+	f.StringVar(&o.expectedHandle, "expected-handle", "", "account confirmed by the caller before submission")
 	f.StringVar(&o.contest, "contest", "", "contest ID")
 	f.StringVar(&o.problem, "problem", "", "problem index")
 	f.StringVar(&o.file, "file", "", "exact source path")
@@ -472,6 +474,9 @@ func (a *App) execute(ctx context.Context, o options, p []string, in io.Reader, 
 		s, e := a.session(o, in)
 		if e != nil {
 			return nil, e
+		}
+		if o.expectedHandle != "" && !strings.EqualFold(s.Handle, o.expectedHandle) {
+			return nil, core.Fail("account_mismatch", "The stored account changed after confirmation. Review the account before sending.")
 		}
 		dir := o.stateDir
 		if dir == "" {

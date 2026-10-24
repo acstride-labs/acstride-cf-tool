@@ -5,10 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/acstride-labs/acstride-cf-tool/internal/core"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 type secrets struct{ calls int }
@@ -89,5 +91,22 @@ func TestStructuredEditorProblemProtocol(t *testing.T) {
 	}
 	if e := json.Unmarshal(out.Bytes(), &result); e != nil || !result.OK || result.RequestID != "read-1" || result.Data.ContestID != 1 || result.Data.Samples[0].Output != "5\n" {
 		t.Fatal(out.String(), e)
+	}
+}
+
+func TestConfirmedAccountChangeStopsBeforeNetwork(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "main.py")
+	source := []byte("print(1)\n")
+	if e := os.WriteFile(file, source, 0600); e != nil {
+		t.Fatal(e)
+	}
+	session := core.Session{Protocol: 1, Handle: "changed", ExpiresAt: time.Now().Add(time.Hour).Unix(), Cookies: []*http.Cookie{{Name: "JSESSIONID", Value: "fixture", Domain: "codeforces.com", Path: "/", Secure: true}}}
+	raw, _ := json.Marshal(session)
+	app := &App{Client: core.New(), Secrets: &secrets{}}
+	var out bytes.Buffer
+	exit := app.Run(context.Background(), []string{"submit", "--experimental", "--confirm", "--session-stdin", "--contest", "1", "--problem", "A", "--file", file, "--language-id", "31", "--expected-sha256", core.SourceHash(source), "--expected-handle", "confirmed"}, bytes.NewReader(raw), &out, &out)
+	var result Envelope
+	if json.Unmarshal(out.Bytes(), &result) != nil || exit != 3 || result.Error == nil || result.Error.Code != "account_mismatch" {
+		t.Fatal(exit, out.String())
 	}
 }

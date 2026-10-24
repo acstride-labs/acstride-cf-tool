@@ -226,7 +226,7 @@ HTML 中成功下载的图片变为 `acstride-asset:哈希.png` 等引用。调�
 
 `session check` 返回 handle 与认证状态；`languages list` 返回表单实际提供的 `{ "id": "…", "name": "…" }` 数组。`session forget` 仅删除本地会话，不撤销服务端会话。
 
-提交必须明确指定题目、文件、官方语言 ID、已确认的源码 SHA256，以及 `--experimental --confirm`。完整参数见 [协议文档](docs/protocol.md)。每次尝试发送前先写本地快照和未知回执，发送后返回退出码 `5`，直到独立核对成功：
+编辑器还应传入 `--expected-handle`，绑定确认弹窗中的账号，防止其他窗口切换登录后误投。提交必须明确指定题目、文件、官方语言 ID、已确认的源码 SHA256，以及 `--experimental --confirm`。完整参数见 [协议文档](docs/protocol.md)。每次尝试发送前先写本地快照和未知回执，发送后返回退出码 `5`，直到独立核对成功：
 
 ```sh
 ./acstride-cf receipt show RECEIPT_ID

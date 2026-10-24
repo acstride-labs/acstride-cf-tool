@@ -105,3 +105,7 @@ Production CLI operations share request-start pacing across processes using an
 OS lock and last-start timestamp in the user cache directory. Offline commands
 do not create pacing files. A killed process releases its OS lock; timestamps
 cannot reserve an unbounded future delay. Each request still honors cancellation.
+
+## Confirmed account binding (0.4+)
+
+Editors pass `submit --expected-handle HANDLE` with the account displayed in their confirmation dialog. After loading the session, the CLI rejects a mismatch before any form request or POST. This prevents another editor window or terminal login from changing the confirmed account between review and sending. Standalone callers may omit the flag when no separate account confirmation exists.
