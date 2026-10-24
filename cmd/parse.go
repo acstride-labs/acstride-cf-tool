@@ -4,8 +4,8 @@ import (
 	"errors"
 	"path/filepath"
 
-	"github.com/acstride-labs/acstride-cf-tool/client"
-	"github.com/acstride-labs/acstride-cf-tool/config"
+	"github.com/acstride-labs/codeforces-client/client"
+	"github.com/acstride-labs/codeforces-client/config"
 )
 
 // Parse command

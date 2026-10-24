@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/acstride-labs/acstride-cf-tool/client"
+	"github.com/acstride-labs/codeforces-client/client"
 )
 
 // Watch command

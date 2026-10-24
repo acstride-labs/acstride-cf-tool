@@ -10,7 +10,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	if os.Getenv("ACSTRIDE_TEST_HELPER") != "" {
+	if os.Getenv("CODEFORCES_CLIENT_TEST_HELPER") != "" {
 		if len(os.Args) > 1 && os.Args[1] == "--serve" {
 			decoder := json.NewDecoder(os.Stdin)
 			for {
@@ -29,11 +29,11 @@ func TestMain(m *testing.M) {
 		}
 		json.NewDecoder(os.Stdin).Decode(&v)
 		u := Host + v.Path
-		if os.Getenv("ACSTRIDE_TEST_HELPER") == "external" {
+		if os.Getenv("CODEFORCES_CLIENT_TEST_HELPER") == "external" {
 			u = "https://evil.test/"
 		}
 		body := statement
-		if os.Getenv("ACSTRIDE_TEST_HELPER") == "large" {
+		if os.Getenv("CODEFORCES_CLIENT_TEST_HELPER") == "large" {
 			body += strings.Repeat("x", 8_000_001)
 		}
 		json.NewEncoder(os.Stdout).Encode(Page{HTML: body, URL: u, Status: 200})
@@ -46,7 +46,7 @@ func TestAnonymousHelperAdapter(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	t.Setenv("ACSTRIDE_TEST_HELPER", "good")
+	t.Setenv("CODEFORCES_CLIENT_TEST_HELPER", "good")
 	read := ExternalPublicHelper(executable)
 	p, e := read(context.Background(), "/contest/1/problem/A")
 	if e != nil || p.Status != 200 {
@@ -54,7 +54,7 @@ func TestAnonymousHelperAdapter(t *testing.T) {
 	}
 	_, e = read(context.Background(), "/enter")
 	code(t, e, "invalid_argument")
-	t.Setenv("ACSTRIDE_TEST_HELPER", "external")
+	t.Setenv("CODEFORCES_CLIENT_TEST_HELPER", "external")
 	_, e = read(context.Background(), "/contest/1/problem/A")
 	code(t, e, "unexpected_redirect")
 }
@@ -64,7 +64,7 @@ func TestPublicHelperPoolReusesProcesses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Setenv("ACSTRIDE_TEST_HELPER", "good")
+	t.Setenv("CODEFORCES_CLIENT_TEST_HELPER", "good")
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	read, closePool := PublicHelperPool(ctx, executable)

@@ -42,7 +42,7 @@ func StateDir() (string, error) {
 	if e != nil {
 		return "", e
 	}
-	return filepath.Join(d, "acstride-cf-tool"), nil
+	return filepath.Join(d, "codeforces-client"), nil
 }
 func (r Receipts) root() (*os.Root, error) {
 	if e := os.MkdirAll(r.Dir, 0700); e != nil {

@@ -1,7 +1,7 @@
 # Releasing the standalone CLI
 
 The `Release binaries` workflow in `.github/workflows/release.yml` builds the
-modern `acstride-cf` CLI. The existing push/PR CI remains separate.
+modern `codeforces-client` CLI. The existing push/PR CI remains separate.
 
 ## Publish a version
 
@@ -31,18 +31,18 @@ this workflow. Use the manual entry point below in that situation.
 For each of Linux, macOS (`darwin`) and Windows, both `amd64` and `arm64` are built:
 
 ```text
-acstride-cf_0.5.0-alpha.1_linux_amd64.tar.gz
-acstride-cf_0.5.0-alpha.1_linux_arm64.tar.gz
-acstride-cf_0.5.0-alpha.1_darwin_amd64.tar.gz
-acstride-cf_0.5.0-alpha.1_darwin_arm64.tar.gz
-acstride-cf_0.5.0-alpha.1_windows_amd64.zip
-acstride-cf_0.5.0-alpha.1_windows_arm64.zip
-acstride-cf_0.5.0-alpha.1_linux_amd64
-acstride-cf_0.5.0-alpha.1_linux_arm64
-acstride-cf_0.5.0-alpha.1_darwin_amd64
-acstride-cf_0.5.0-alpha.1_darwin_arm64
-acstride-cf_0.5.0-alpha.1_windows_amd64.exe
-acstride-cf_0.5.0-alpha.1_windows_arm64.exe
+codeforces-client_0.5.0-alpha.1_linux_amd64.tar.gz
+codeforces-client_0.5.0-alpha.1_linux_arm64.tar.gz
+codeforces-client_0.5.0-alpha.1_darwin_amd64.tar.gz
+codeforces-client_0.5.0-alpha.1_darwin_arm64.tar.gz
+codeforces-client_0.5.0-alpha.1_windows_amd64.zip
+codeforces-client_0.5.0-alpha.1_windows_arm64.zip
+codeforces-client_0.5.0-alpha.1_linux_amd64
+codeforces-client_0.5.0-alpha.1_linux_arm64
+codeforces-client_0.5.0-alpha.1_darwin_amd64
+codeforces-client_0.5.0-alpha.1_darwin_arm64
+codeforces-client_0.5.0-alpha.1_windows_amd64.exe
+codeforces-client_0.5.0-alpha.1_windows_arm64.exe
 SHA256SUMS
 ```
 
@@ -55,8 +55,8 @@ compiler and binary checksum. The software release version does not change
 it is not the authority for a tagged release.
 
 Standalone executables are extracted from the verified archives, never rebuilt separately.
-Rename the selected download to `acstride-cf` (`acstride-cf.exe` on Windows).
-On macOS/Linux, run `chmod +x ./acstride-cf` after downloading. Choose the full
+Rename the selected download to `codeforces-client` (`codeforces-client.exe` on Windows).
+On macOS/Linux, run `chmod +x ./codeforces-client` after downloading. Choose the full
 archive for license notices and build metadata. SHA256SUMS covers all 12 downloads.
 
 Verify downloaded files using `sha256sum -c SHA256SUMS` on Linux or

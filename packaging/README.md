@@ -13,9 +13,9 @@ Generated executables/runtimes are ignored, never committed to either repository
 Editor package layout:
 
 ```text
-resources/cf-tool/acstride-cf                 # acstride-cf.exe on Windows
-resources/downloader/cfide-downloader/
-  cfide-downloader                          # cfide-downloader.exe on Windows
+resources/cf-tool/codeforces-client                 # codeforces-client.exe on Windows
+resources/downloader/codeforces-workbench-downloader/
+  codeforces-workbench-downloader                          # codeforces-workbench-downloader.exe on Windows
   ...private runtime/native libraries/CA data
 ```
 

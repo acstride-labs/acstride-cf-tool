@@ -8,7 +8,7 @@ import (
 )
 
 func TestLiveAnonymous(t *testing.T) {
-	if os.Getenv("ACSTRIDE_LIVE") != "1" {
+	if os.Getenv("CODEFORCES_CLIENT_LIVE") != "1" {
 		t.Skip("opt-in public network checks only")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)

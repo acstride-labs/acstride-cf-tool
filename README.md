@@ -1,6 +1,6 @@
-# ACStride CF Tool
+# Codeforces Client
 
-ACStride CF Tool 是一个与 [Codeforces](https://codeforces.com) 交互的命令行客户端，也是编辑器可集成的 API 客户端层。它把比赛信息、题面、样例、图片、提交记录和排行榜统一转换为结构化 JSON，供终端用户、脚本和 VS Code 等编辑器使用。
+Codeforces Client 是一个与 [Codeforces](https://codeforces.com) 交互的命令行客户端，也是编辑器可集成的 API 客户端层。它把比赛信息、题面、样例、图片、提交记录和排行榜统一转换为结构化 JSON，供终端用户、脚本和 VS Code 等编辑器使用。
 
 它基于 [xalanq/cf-tool](https://github.com/xalanq/cf-tool) 开发，保留 MIT 许可证与原作者版权。它不是 Codeforces 官方客户端。
 
@@ -15,15 +15,15 @@ ACStride CF Tool 是一个与 [Codeforces](https://codeforces.com) 交互的命�
 
 ### 1. 获取工具
 
-如果你使用 AC-Stride VS Code 插件，只需安装与你的系统匹配的插件包。CF Tool 和题面下载依赖已经包含在插件中，不需要另外安装、配置 PATH，或安装 Go/Python。
+如果你使用 AC-Stride VS Code 插件，只需安装与你的系统匹配的插件包。Codeforces Client 和题面下载依赖已经包含在插件中，不需要另外安装、配置 PATH，或安装 Go/Python。
 
-独立使用时，优先从本仓库 [Releases](https://github.com/acstride-labs/codeforces-client/releases) 下载对应系统与 CPU 的独立可执行文件或完整压缩包，并核对 `SHA256SUMS`；发布后的自动构建完成，文件才会出现在 Release 的 Assets 中。尚未发布的开发构建可从 [Actions](https://github.com/acstride-labs/codeforces-client/actions) 下载 artifact。压缩包解压后即可运行；独立文件下载后可重命名为 `acstride-cf`（Windows 为 `acstride-cf.exe`）。压缩包另附许可证、第三方声明及构建信息。发布流水线提供 Linux、macOS、Windows 的 amd64/arm64 二进制；交叉编译产物不代表每种架构都已实际运行验证。macOS/Linux 如没有执行权限，先运行 `chmod +x ./acstride-cf`。下面以 macOS/Linux 为例；Windows PowerShell 将 `./acstride-cf` 换成 `.\acstride-cf.exe`。
+独立使用时，优先从本仓库 [Releases](https://github.com/acstride-labs/codeforces-client/releases) 下载对应系统与 CPU 的独立可执行文件或完整压缩包，并核对 `SHA256SUMS`；发布后的自动构建完成，文件才会出现在 Release 的 Assets 中。尚未发布的开发构建可从 [Actions](https://github.com/acstride-labs/codeforces-client/actions) 下载 artifact。压缩包解压后即可运行；独立文件下载后可重命名为 `codeforces-client`（Windows 为 `codeforces-client.exe`）。压缩包另附许可证、第三方声明及构建信息。发布流水线提供 Linux、macOS、Windows 的 amd64/arm64 二进制；交叉编译产物不代表每种架构都已实际运行验证。macOS/Linux 如没有执行权限，先运行 `chmod +x ./codeforces-client`。下面以 macOS/Linux 为例；Windows PowerShell 将 `./codeforces-client` 换成 `.\codeforces-client.exe`。
 
 ### 2. 查看能力和比赛
 
 ```sh
-./acstride-cf capabilities
-./acstride-cf contest info 1
+./codeforces-client capabilities
+./codeforces-client contest info 1
 ```
 
 第一条命令不访问网络，返回协议版本和能力列表。第二条查询比赛 1 的公开信息。
@@ -31,7 +31,7 @@ ACStride CF Tool 是一个与 [Codeforces](https://codeforces.com) 交互的命�
 ### 3. 获取题面和样例
 
 ```sh
-./acstride-cf problem fetch 1 A --output ./practice
+./codeforces-client problem fetch 1 A --output ./practice
 ```
 
 结果包含题目标题、HTML/纯文本题面、时间/内存限制及样例。指定 `--output` 时，工具还会保存可复用的题目缓存；不生成或覆盖你的源码、自定义测试。
@@ -39,13 +39,13 @@ ACStride CF Tool 是一个与 [Codeforces](https://codeforces.com) 交互的命�
 如需同时下载官方图片：
 
 ```sh
-./acstride-cf problem read 1 A --assets-dir ./practice/assets
+./codeforces-client problem read 1 A --assets-dir ./practice/assets
 ```
 
 如需整场题目：
 
 ```sh
-./acstride-cf contest download 1 --output ./practice --stream
+./codeforces-client contest download 1 --output ./practice --stream
 ```
 
 遇到站点验证时，命令返回明确错误；工具不会解决或绕过 CAPTCHA。可保留本地工作并稍后重试。
@@ -57,7 +57,7 @@ ACStride CF Tool 是一个与 [Codeforces](https://codeforces.com) 交互的命�
 ### 一次命令对应一次结果
 
 ```sh
-./acstride-cf contest info 1 --request-id editor-42 --timeout 30s
+./codeforces-client contest info 1 --request-id editor-42 --timeout 30s
 ```
 
 成功结果示例（`data` 字段依命令变化，下例数据仅用于说明格式）：
@@ -124,10 +124,10 @@ stdout 只用于协议数据，stderr 用于诊断。集成时应同时检查协
 ### 能力查询与诊断
 
 ```sh
-./acstride-cf capabilities
-./acstride-cf doctor
-./acstride-cf version
-./acstride-cf help
+./codeforces-client capabilities
+./codeforces-client doctor
+./codeforces-client version
+./codeforces-client help
 ```
 
 `capabilities` 返回版本、协议、匿名/实验能力及 `automaticSubmissionVerified: false`。`doctor` 返回本地状态目录等信息；这两个命令都不访问网络，也不会隐式询问系统凭据库权限。安装缺失、协议不兼容应通过更新或重新安装对应软件包处理。
@@ -135,7 +135,7 @@ stdout 只用于协议数据，stderr 用于诊断。集成时应同时检查协
 ### 比赛信息
 
 ```sh
-./acstride-cf contest info 1
+./codeforces-client contest info 1
 ```
 
 `data` 包含比赛 ID、名称、阶段、类型、开始时间、持续时长等公开信息。
@@ -143,9 +143,9 @@ stdout 只用于协议数据，stderr 用于诊断。集成时应同时检查协
 ### 单题题面、样例和缓存
 
 ```sh
-./acstride-cf problem fetch 1 A
-./acstride-cf problem fetch 1 A --output ./practice
-./acstride-cf problem fetch 1 A --output ./practice --refresh
+./codeforces-client problem fetch 1 A
+./codeforces-client problem fetch 1 A --output ./practice
+./codeforces-client problem fetch 1 A --output ./practice --refresh
 ```
 
 `data` 包含 `protocol`、`fetchedAt` 和 `problem`。`problem` 包含：
@@ -165,7 +165,7 @@ stdout 只用于协议数据，stderr 用于诊断。集成时应同时检查协
 ### 带本地图片的结构化题目
 
 ```sh
-./acstride-cf problem read 1 A --assets-dir ./practice/assets
+./codeforces-client problem read 1 A --assets-dir ./practice/assets
 ```
 
 `problem read` 每次重新读取题目，不使用 `problem fetch` 的 24 小时 JSON 缓存。它返回题目字段，并在同一层增加：
@@ -183,7 +183,7 @@ HTML 中成功下载的图片变为 `acstride-asset:哈希.png` 等引用。调�
 ### 整场下载
 
 ```sh
-./acstride-cf contest download 1 --output ./practice --stream
+./codeforces-client contest download 1 --output ./practice --stream
 ```
 
 逐题获取题面和样例，复用有效缓存，保留成功项并报告失败项。重新运行会继续使用成功缓存；`--refresh` 强制重取。此命令使用 `problem fetch` 缓存，不下载整场图片；需要图片时对目标题目调用 `problem read`。
@@ -193,9 +193,9 @@ HTML 中成功下载的图片变为 `acstride-asset:哈希.png` 等引用。调�
 ### 公开提交记录与评测跟踪
 
 ```sh
-./acstride-cf submissions list --contest 1 --handle tourist --count 20
-./acstride-cf submissions list --handle tourist --count 20
-./acstride-cf submission watch --contest 1 --handle tourist --submission-id 123
+./codeforces-client submissions list --contest 1 --handle tourist --count 20
+./codeforces-client submissions list --handle tourist --count 20
+./codeforces-client submission watch --contest 1 --handle tourist --submission-id 123
 ```
 
 提交列表的 `data` 是数组，包含提交 ID、时间、题号、语言、`verdict`、`testset`、已通过测试数、耗时和内存等字段。评测未完成时 verdict 可能为空或 `TESTING`；`OK` 配合 `PRETESTS` 表示通过预测试，不等于最终系统测试通过。
@@ -205,8 +205,8 @@ HTML 中成功下载的图片变为 `acstride-asset:哈希.png` 等引用。调�
 ### 排行榜
 
 ```sh
-./acstride-cf standings list 1 --from 1 --count 100
-./acstride-cf standings list 1 --handle tourist
+./codeforces-client standings list 1 --from 1 --count 100
+./codeforces-client standings list 1 --handle tourist
 ```
 
 `data` 包含 `contest`、`problems`、`rows`，每行包含名次、成员、得分、罚时及各题成绩。`--from` 从 1 开始，`--count` 为正整数（默认 100，不设置客户端数量上限）。榜单可能冻结、延迟或不可用。
@@ -216,10 +216,10 @@ HTML 中成功下载的图片变为 `acstride-asset:哈希.png` 等引用。调�
 普通读题和公开查询不需要账号。以下功能需要 `--experimental`，还没有真实账号提交验收保证。
 
 ```sh
-./acstride-cf session login --experimental --credentials-stdin --store
-./acstride-cf session check --experimental
-./acstride-cf languages list --contest 1 --experimental
-./acstride-cf session forget
+./codeforces-client session login --experimental --credentials-stdin --store
+./codeforces-client session check --experimental
+./codeforces-client languages list --contest 1 --experimental
+./codeforces-client session forget
 ```
 
 `session login` 从 stdin 读取 `{ "username": "…", "password": "…" }` JSON，由安全的调用方提供；不会弹出密码提示。不要把真实密码写进命令、脚本或 shell 历史。只把会话保存在系统凭据库，不保存密码；凭据库不可用则报错，没有明文降级。验证码与 2FA 不会被自动处理。
@@ -229,8 +229,8 @@ HTML 中成功下载的图片变为 `acstride-asset:哈希.png` 等引用。调�
 编辑器还应传入 `--expected-handle`，绑定确认弹窗中的账号，防止其他窗口切换登录后误投。提交必须明确指定题目、文件、官方语言 ID、已确认的源码 SHA256，以及 `--experimental --confirm`。完整参数见 [协议文档](docs/protocol.md)。每次尝试发送前先写本地快照和未知回执，发送后返回退出码 `5`，直到独立核对成功：
 
 ```sh
-./acstride-cf receipt show RECEIPT_ID
-./acstride-cf receipt reconcile RECEIPT_ID --experimental
+./codeforces-client receipt show RECEIPT_ID
+./codeforces-client receipt reconcile RECEIPT_ID --experimental
 ```
 
 核对要求账号、题目、语言、时间范围和源码哈希匹配。未知回执会阻止同账号同题再次发送；先检查官网，不要盲目重试。`receipt abandon RECEIPT_ID --confirm` 可手动解除阻止，但不证明之前的提交失败，可能造成重复提交。回执和源码快照位于本地配置目录，不自动清理。
@@ -248,7 +248,7 @@ go mod download all
 go mod verify
 go test -race ./...
 go vet ./...
-go build -trimpath -o dist/acstride-cf ./cmd/acstride-cf
+go build -trimpath -o dist/codeforces-client ./cmd/codeforces-client
 ```
 
 - [JSON 协议、完整提交参数与错误码](docs/protocol.md)
@@ -263,7 +263,7 @@ go build -trimpath -o dist/acstride-cf ./cmd/acstride-cf
 
 ## 编辑器常驻下载会话
 
-`acstride-cf serve --bundled` 提供匿名只读的 NDJSON 会话，多个请求共用 Go HTTP 连接池和两个常驻匿名下载器；每个下载器复用自己的 curl 会话。原有单次 CLI 命令保持兼容。此接口不接收登录、提交或其他写入网站的操作。
+`codeforces-client serve --bundled` 提供匿名只读的 NDJSON 会话，多个请求共用 Go HTTP 连接池和两个常驻匿名下载器；每个下载器复用自己的 curl 会话。原有单次 CLI 命令保持兼容。此接口不接收登录、提交或其他写入网站的操作。
 
 - 获取比赛题目列表：`{"requestId":"list-1","command":"contest.problems","contestId":1234}`。请求 `contest.standings?from=1&count=1`，仅返回比赛信息和题目列表，完整排名仍按需请求。
 - 导入比赛：`{"requestId":"download-1","command":"download","contestId":1234,"indices":["A","B","C","D"],"assetsDir":"/absolute/cache/assets"}`。索引按题目顺序传入，首题正文和样例先独立获取，之后用两个 FIFO 消费者下载剩余题目；结果可能按完成先后返回。
@@ -275,3 +275,5 @@ go build -trimpath -o dist/acstride-cf ./cmd/acstride-cf
 ## 发布版本
 
 发布带 `v` 前缀的 SemVer Release 后，GitHub Actions 会先测试，再构建六个平台的独立 CLI 压缩包、注入版本号并生成校验和，最后上传到该 Release。Alpha/Beta/RC 需要标记为 Pre-release。也支持先手动构建验收，再上传到草稿 Release。操作步骤与失败恢复见[发布指南](docs/releasing.md)。
+
+新版本只使用 `codeforces-client` 命名，不读取旧开发版本的目录、配置或钥匙串条目。已发布的历史 Release 保持原样，新资产名从下一次发布生效。

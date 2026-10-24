@@ -13,7 +13,7 @@ import (
 	"github.com/zalando/go-keyring"
 )
 
-const secretService = "acstride-cf-tool"
+const secretService = "codeforces-client"
 
 type Session struct {
 	Protocol  int            `json:"protocol"`

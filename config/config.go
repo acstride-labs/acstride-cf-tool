@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/color"
-	"github.com/acstride-labs/acstride-cf-tool/client"
+	"github.com/acstride-labs/codeforces-client/client"
 )
 
 // CodeTemplate config parse code template

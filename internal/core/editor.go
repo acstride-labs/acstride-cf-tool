@@ -135,7 +135,7 @@ func (c *Client) image(ctx context.Context, source string) ([]byte, string, erro
 	if err != nil {
 		return nil, "", err
 	}
-	req.Header.Set("User-Agent", "ACStride-CF/0.3")
+	req.Header.Set("User-Agent", "Codeforces-Client/0.3")
 	// Never attach account cookies or follow redirects while reading images.
 	transport := *c.HTTP
 	transport.Jar = nil

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/acstride-labs/acstride-cf-tool/internal/core"
+	"github.com/acstride-labs/codeforces-client/internal/core"
 )
 
 func TestReadSessionStaysOpenAndRejectsWrites(t *testing.T) {

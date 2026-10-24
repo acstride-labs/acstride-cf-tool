@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/acstride-labs/acstride-cf-tool/util"
+	"github.com/acstride-labs/codeforces-client/util"
 	"github.com/fatih/color"
 )
 

@@ -112,7 +112,7 @@ Editors pass `submit --expected-handle HANDLE` with the account displayed in the
 
 ## Persistent anonymous reads (0.5)
 
-Start `acstride-cf serve --bundled`. Each stdin line is an object with a unique `requestId` and one of these commands:
+Start `codeforces-client serve --bundled`. Each stdin line is an object with a unique `requestId` and one of these commands:
 
 | command | fields | output |
 | --- | --- | --- |

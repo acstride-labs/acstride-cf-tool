@@ -56,11 +56,11 @@ func BundledPublicHelper() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	name := "cfide-downloader"
+	name := "codeforces-workbench-downloader"
 	if runtime.GOOS == "windows" {
 		name += ".exe"
 	}
-	helper := filepath.Join(filepath.Dir(exe), "..", "downloader", "cfide-downloader", name)
+	helper := filepath.Join(filepath.Dir(exe), "..", "downloader", "codeforces-workbench-downloader", name)
 	info, err := os.Stat(helper)
 	if err != nil || !info.Mode().IsRegular() {
 		return "", Fail("helper_failed", "The bundled public transport is missing. Reinstall the matching editor package.")

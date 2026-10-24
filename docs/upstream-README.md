@@ -7,7 +7,7 @@ for compatibility. No login, site-verification or submission fixes have been
 validated in this fork yet. The documentation below describes the inherited
 upstream implementation; release badges and downloads refer to the upstream project.
 
-Related: [VS Code extension](https://github.com/acstride-labs/acstride-vscode-extension)
+Related: [VS Code extension](https://github.com/acstride-labs/codeforces-workbench)
 and [product website](https://github.com/acstride-labs/acstride-web).
 
 [![Github release](https://img.shields.io/github/release/xalanq/cf-tool.svg)](https://github.com/xalanq/cf-tool/releases)

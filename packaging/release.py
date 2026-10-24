@@ -43,14 +43,14 @@ def pack(folder, destination, system):
             for file in sorted(folder.iterdir()):
                 info = zipfile.ZipInfo(f"{folder.name}/{file.name}", (1980, 1, 1, 0, 0, 0))
                 info.create_system = 3
-                info.external_attr = (0o100000 | (0o755 if file.name in ("acstride-cf", "acstride-cf.exe") else 0o644)) << 16
+                info.external_attr = (0o100000 | (0o755 if file.name in ("codeforces-client", "codeforces-client.exe") else 0o644)) << 16
                 info.compress_type = zipfile.ZIP_DEFLATED
                 archive.writestr(info, file.read_bytes())
     else:
         def normalized(info):
             info.mtime = info.uid = info.gid = 0
             info.uname = info.gname = ""
-            info.mode = 0o755 if info.isdir() or Path(info.name).name == "acstride-cf" else 0o644
+            info.mode = 0o755 if info.isdir() or Path(info.name).name == "codeforces-client" else 0o644
             return info
         with destination.open("wb") as output:
             with gzip.GzipFile(fileobj=output, mode="wb", filename="", mtime=0) as compressed:
@@ -65,16 +65,16 @@ def build(tag, system, arch, output):
     go = os.environ.get("GO", "go")
     revision = run(["git", "rev-parse", "HEAD"])
     output.mkdir(parents=True, exist_ok=True)
-    name = f"acstride-cf_{release_version}_{system}_{arch}"
+    name = f"codeforces-client_{release_version}_{system}_{arch}"
     destination = output / (name + (".zip" if system == "windows" else ".tar.gz"))
     with tempfile.TemporaryDirectory(prefix="acstride-release-") as temporary:
         folder = Path(temporary) / name
         folder.mkdir()
-        binary = folder / ("acstride-cf.exe" if system == "windows" else "acstride-cf")
+        binary = folder / ("codeforces-client.exe" if system == "windows" else "codeforces-client")
         environment = {**os.environ, "GOOS": system, "GOARCH": arch, "CGO_ENABLED": "0", "GOTOOLCHAIN": "local"}
         subprocess.run([go, "build", "-trimpath", "-ldflags",
-                        f"-s -w -X github.com/acstride-labs/acstride-cf-tool/internal/cli.Version={release_version}",
-                        "-o", str(binary), "./cmd/acstride-cf"], cwd=ROOT, env=environment, check=True)
+                        f"-s -w -X github.com/acstride-labs/codeforces-client/internal/cli.Version={release_version}",
+                        "-o", str(binary), "./cmd/codeforces-client"], cwd=ROOT, env=environment, check=True)
         # Notice generation is a build-host operation, even when the binary is cross-compiled.
         host_env = {k: v for k, v in os.environ.items() if k not in ("GOOS", "GOARCH", "GOARM")}
         if Path(go).is_absolute():
@@ -98,8 +98,8 @@ def verify_archives(tag, output):
     revisions = set()
     required = {"LICENSE", "README.md", "THIRD_PARTY_NOTICES.txt", "BUILD.json"}
     for system, arch in TARGETS:
-        name = f"acstride-cf_{release_version}_{system}_{arch}"
-        binary = "acstride-cf.exe" if system == "windows" else "acstride-cf"
+        name = f"codeforces-client_{release_version}_{system}_{arch}"
+        binary = "codeforces-client.exe" if system == "windows" else "codeforces-client"
         archive_path = output / (name + (".zip" if system == "windows" else ".tar.gz"))
         if system == "windows":
             with zipfile.ZipFile(archive_path) as archive:

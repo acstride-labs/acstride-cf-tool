@@ -70,7 +70,7 @@ func TestLargeHelperPage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Setenv("ACSTRIDE_TEST_HELPER", "large")
+	t.Setenv("CODEFORCES_CLIENT_TEST_HELPER", "large")
 	page, err := ExternalPublicHelper(executable)(context.Background(), "/contest/1/problem/A")
 	if err != nil || len(page.HTML) <= 8_000_000 {
 		t.Fatal(len(page.HTML), err)

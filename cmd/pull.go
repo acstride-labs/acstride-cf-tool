@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/acstride-labs/acstride-cf-tool/client"
+	"github.com/acstride-labs/codeforces-client/client"
 )
 
 // Pull command

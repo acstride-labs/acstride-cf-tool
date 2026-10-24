@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/acstride-labs/acstride-cf-tool/util"
+	"github.com/acstride-labs/codeforces-client/util"
 )
 
 // StatisInfo statis information

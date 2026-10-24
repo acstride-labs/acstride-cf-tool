@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/acstride-labs/acstride-cf-tool/internal/cli"
+	"github.com/acstride-labs/codeforces-client/internal/cli"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 
-	"github.com/acstride-labs/acstride-cf-tool/client"
-	"github.com/acstride-labs/acstride-cf-tool/cmd"
-	"github.com/acstride-labs/acstride-cf-tool/config"
+	"github.com/acstride-labs/codeforces-client/client"
+	"github.com/acstride-labs/codeforces-client/cmd"
+	"github.com/acstride-labs/codeforces-client/config"
 	"github.com/fatih/color"
 	ansi "github.com/k0kubun/go-ansi"
 	"github.com/mitchellh/go-homedir"
@@ -32,7 +32,7 @@ func main() {
 			os.Exit(cli.Run(ctx, os.Args[1:], os.Stdin, os.Stdout, os.Stderr))
 		}
 	}
-	usage := `Codeforces Tool $%version%$ (cf). https://github.com/xalanq/cf-tool
+	usage := `Codeforces Client $%version%$ (cf). https://github.com/xalanq/cf-tool
 
 You should run "cf config" to configure your handle, password and code
 templates at first.
