@@ -88,7 +88,7 @@ func TestTransportClassification(t *testing.T) {
 	for _, tc := range []struct {
 		status     int
 		body, want string
-	}{{403, "<title>Just a moment</title>", "verification_required"}, {403, "denied", "access_denied"}, {429, "slow", "rate_limited"}, {404, "none", "not_found"}, {500, "bad", "http_error"}, {200, strings.Repeat("x", BodyLimit+1), "response_too_large"}} {
+	}{{403, "<title>Just a moment</title>", "verification_required"}, {403, "denied", "access_denied"}, {429, "slow", "rate_limited"}, {404, "none", "not_found"}, {500, "bad", "http_error"}} {
 		t.Run(tc.want, func(t *testing.T) {
 			c := serverClient(t, func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(tc.status); io.WriteString(w, tc.body) })
 			_, e := c.Request(context.Background(), "GET", "/", nil)

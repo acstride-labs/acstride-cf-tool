@@ -65,10 +65,10 @@ func (c *Client) Fetch(ctx context.Context, id int, index, output string, refres
 		defer root.Close()
 		if !refresh {
 			if f, e := root.Open(name); e == nil {
-				b, readErr := io.ReadAll(io.LimitReader(f, BodyLimit*3+1))
+				b, readErr := io.ReadAll(f)
 				f.Close()
 				var cached CachedProblem
-				if readErr == nil && len(b) <= BodyLimit*3 && json.Unmarshal(b, &cached) == nil && cached.Protocol == 1 && cached.Problem.ContestID == id && cached.Problem.Index == index && time.Since(cached.FetchedAt) >= 0 && time.Since(cached.FetchedAt) < 24*time.Hour {
+				if readErr == nil && json.Unmarshal(b, &cached) == nil && cached.Protocol == 1 && cached.Problem.ContestID == id && cached.Problem.Index == index && time.Since(cached.FetchedAt) >= 0 && time.Since(cached.FetchedAt) < 24*time.Hour {
 					// Re-sanitize cached HTML before exposing it to an editor.
 					p, err := ParseProblem(Page{HTML: cached.Problem.StatementHTML, URL: Host + "/contest/" + strconv.Itoa(id) + "/problem/" + index, Status: 200}, id, index)
 					if err == nil {

@@ -24,7 +24,7 @@ func TestProtocolAndGates(t *testing.T) {
 		args      []string
 		want      int
 		errorCode string
-	}{{[]string{"capabilities", "--request-id", "req-1"}, 0, ""}, {[]string{"version"}, 0, ""}, {[]string{"--version"}, 0, ""}, {[]string{"help"}, 0, ""}, {[]string{"doctor"}, 0, ""}, {[]string{"submit"}, 2, "experimental_disabled"}, {[]string{"session", "check"}, 2, "experimental_disabled"}, {[]string{"session", "check", "--experimental"}, 3, "session_unavailable"}, {[]string{"contest", "info", "../1"}, 2, "invalid_argument"}, {[]string{"standings", "list", "1", "--count", "1000"}, 2, "invalid_argument"}, {[]string{"receipt", "abandon", strings.Repeat("a", 32)}, 2, "invalid_argument"}, {[]string{"--password", "SECRET"}, 2, "invalid_argument"}, {[]string{"capabilities", "junk"}, 2, "invalid_argument"}, {[]string{"api", "enter"}, 2, "invalid_argument"}} {
+	}{{[]string{"capabilities", "--request-id", "req-1"}, 0, ""}, {[]string{"version"}, 0, ""}, {[]string{"--version"}, 0, ""}, {[]string{"help"}, 0, ""}, {[]string{"doctor"}, 0, ""}, {[]string{"submit"}, 2, "experimental_disabled"}, {[]string{"session", "check"}, 2, "experimental_disabled"}, {[]string{"session", "check", "--experimental"}, 3, "session_unavailable"}, {[]string{"contest", "info", "../1"}, 2, "invalid_argument"}, {[]string{"standings", "list", "1", "--count", "0"}, 2, "invalid_argument"}, {[]string{"receipt", "abandon", strings.Repeat("a", 32)}, 2, "invalid_argument"}, {[]string{"--password", "SECRET"}, 2, "invalid_argument"}, {[]string{"capabilities", "junk"}, 2, "invalid_argument"}, {[]string{"api", "enter"}, 2, "invalid_argument"}} {
 		t.Run(strings.Join(tc.args, " "), func(t *testing.T) {
 			var out, log bytes.Buffer
 			s := &secrets{}

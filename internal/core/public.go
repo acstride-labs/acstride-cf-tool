@@ -88,7 +88,7 @@ func (c *Client) Contest(ctx context.Context, id int) (Contest, error) {
 	return Contest{}, Fail("not_found", "Contest not found in the public contest list.")
 }
 func (c *Client) Rankings(ctx context.Context, id int, handle string, from, count int) (Standings, error) {
-	if from < 1 || count < 1 || count > 100 {
+	if from < 1 || count < 1 {
 		return Standings{}, Fail("invalid_argument", "Invalid ranking page.")
 	}
 	p := url.Values{"contestId": {strconv.Itoa(id)}}
@@ -123,7 +123,7 @@ func (c *Client) Rankings(ctx context.Context, id int, handle string, from, coun
 		}
 	}
 	start := min(from-1, len(rows))
-	end := min(start+count, len(rows))
+	end := start + min(count, len(rows)-start)
 	result.Rows = rows[start:end]
 	return result, err
 }

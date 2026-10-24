@@ -23,7 +23,7 @@ packages. Password login/submission/self-update in the legacy path are disabled.
 
 Testing includes HTML fixtures, current and older sample markup, malicious HTML,
 missing/mismatched samples, authenticated identity, language binding, fixed-origin
-redirects, response limits, cancellation/timeouts, anonymous cache reuse, rooted
+redirects, large responses, cancellation/timeouts, anonymous cache reuse, rooted
 symlink protection, partial downloads, session validation, durable unknown
 receipts, duplicate blocking and exact-source reconciliation. Tests use fake
 HTTP servers and fake secret stores, never a real password/submission.

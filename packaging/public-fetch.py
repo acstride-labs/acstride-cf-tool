@@ -59,12 +59,7 @@ def main():
                     url = target
                     continue
                 chunks = []
-                size = 0
                 for chunk in response.iter_content():
-                    size += len(chunk)
-                    if size > 8_000_000:
-                        print(json.dumps({"error": "page_too_large"}))
-                        return
                     chunks.append(chunk)
                 html = b"".join(chunks).decode("utf-8", errors="replace")
                 print(json.dumps({"status": response.status_code, "url": url, "html": html}, ensure_ascii=False))

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"io"
 	"os"
 	"os/exec"
@@ -14,18 +13,6 @@ import (
 	"strings"
 	"time"
 )
-
-type limitedBuffer struct {
-	bytes.Buffer
-	limit int
-}
-
-func (b *limitedBuffer) Write(p []byte) (int, error) {
-	if b.Len()+len(p) > b.limit {
-		return 0, errors.New("output limit")
-	}
-	return b.Buffer.Write(p)
-}
 
 // ExternalPublicHelper adapts the existing bundled anonymous curl_cffi reader.
 // Only an explicitly supplied absolute executable is run, with no shell and no cookies.
@@ -50,7 +37,7 @@ func ExternalPublicHelper(executable string) func(context.Context, string) (Page
 			}
 		}
 		command.Env = append(command.Env, "PYINSTALLER_RESET_ENVIRONMENT=1")
-		out := &limitedBuffer{limit: 50_000_000}
+		out := &bytes.Buffer{}
 		command.Stdout = out
 		command.Stderr = io.Discard
 		if e := command.Run(); e != nil {
@@ -67,9 +54,6 @@ func ExternalPublicHelper(executable string) func(context.Context, string) (Page
 		}
 		if json.Unmarshal(out.Bytes(), &data) != nil || data.Error != "" {
 			return Page{}, Fail("helper_failed", "The anonymous public helper returned an invalid response.")
-		}
-		if len(data.HTML) > BodyLimit {
-			return Page{}, Fail("response_too_large", "Problem HTML exceeds the response limit.")
 		}
 		if data.URL != Host+path {
 			return Page{}, Fail("unexpected_redirect", "The anonymous helper returned a different resource.")

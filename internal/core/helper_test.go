@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -17,7 +18,11 @@ func TestMain(m *testing.M) {
 		if os.Getenv("ACSTRIDE_TEST_HELPER") == "external" {
 			u = "https://evil.test/"
 		}
-		json.NewEncoder(os.Stdout).Encode(Page{HTML: statement, URL: u, Status: 200})
+		body := statement
+		if os.Getenv("ACSTRIDE_TEST_HELPER") == "large" {
+			body += strings.Repeat("x", 8_000_001)
+		}
+		json.NewEncoder(os.Stdout).Encode(Page{HTML: body, URL: u, Status: 200})
 		os.Exit(0)
 	}
 	os.Exit(m.Run())

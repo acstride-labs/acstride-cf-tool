@@ -27,7 +27,7 @@ Stable codes include `invalid_argument`, `source_changed`, `invalid_language`,
 `account_mismatch`, `not_authenticated`, `login_failed`, `session_unavailable`,
 `secret_store_unavailable`, `verification_required`, `access_denied`, `not_found`,
 `problem_not_ready`, `parse_error`, `invalid_response`, `api_rejected`,
-`rate_limited`, `timeout`, `cancelled`, `response_too_large`, `external_redirect`,
+`rate_limited`, `timeout`, `cancelled`, `external_redirect`,
 `unsafe_redirect`, `unexpected_redirect`, `partial_failure`, `helper_failed`,
 `submission_pending`, `submission_unknown`, `invalid_receipt`, `busy` and
 `request_failed`. Localize codes in the host's JSON catalogs; raw messages are
@@ -38,8 +38,8 @@ English diagnostics and must not become UI state identifiers.
 Only `api contest.list`, `api contest.status --contest ID --handle HANDLE`, and
 `api contest.standings --contest ID` are exposed. They return the API result,
 not its outer Codeforces envelope. The standings bridge accepts `--all-rows`
-for the existing editor's nearby/search filtering, still subject to the 8 MB
-network response limit. Otherwise use paging/count/handle filters. Arbitrary
+for the existing editor's nearby/search filtering, without a fixed response-byte
+limit. Otherwise use paging/count/handle filters. Arbitrary
 API methods, alternate hosts and credential-bearing URLs are not accepted.
 
 `capabilities` is offline and reports protocol/version/features plus
@@ -85,8 +85,7 @@ private files, not cloud uploads or billing artifacts.
 `problem read ID INDEX --assets-dir DIR` returns the `Problem` fields directly
 plus RFC3339 `fetchedAt`, integer `imageFailures`, and an `assets` array of local
 content-addressed filenames. This is a fresh read, separate from `problem fetch`
-JSON caches. Omit the directory for no image downloads. Images are bounded to
-50 attempts and 5 MB each; duplicate URLs reuse a successful download. The explicit
+JSON caches. Omit the directory for no image downloads. Image count and response bytes are not capped; duplicate URLs reuse a successful download. The explicit
 asset root is opened with os.Root and writes use atomic replacement, rejecting
 symlinks. Partial image failures preserve the statement and samples; failed image
 URLs may remain HTTPS references and offline clients should disable them.

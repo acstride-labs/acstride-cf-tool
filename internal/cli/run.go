@@ -17,7 +17,7 @@ import (
 	"github.com/acstride-labs/acstride-cf-tool/internal/core"
 )
 
-var Version = "0.3.0"
+var Version = "0.3.1"
 
 type Envelope struct {
 	Protocol  int         `json:"protocol"`
@@ -59,7 +59,7 @@ func parse(args []string) (options, []string, error) {
 	f.StringVar(&o.publicHelper, "public-helper", "", "absolute bundled anonymous downloader path")
 	f.StringVar(&o.assetsDir, "assets-dir", "", "explicit statement image cache root")
 	f.BoolVar(&o.bundled, "bundled", false, "require the install-relative anonymous transport")
-	f.BoolVar(&o.allRows, "all-rows", false, "read all ranking rows, response size limit still applies")
+	f.BoolVar(&o.allRows, "all-rows", false, "read all ranking rows")
 	f.BoolVar(&o.refresh, "refresh", false, "refresh cache")
 	f.BoolVar(&o.stream, "stream", false, "NDJSON progress")
 	f.BoolVar(&o.experimental, "experimental", false, "enable website operations")
@@ -69,7 +69,7 @@ func parse(args []string) (options, []string, error) {
 	f.BoolVar(&o.store, "store", false, "store session in OS keyring")
 	f.Bool("json", true, "protocol v1 JSON output")
 	f.Bool("non-interactive", true, "never prompt")
-	f.IntVar(&o.count, "count", 100, "result count, 1..100")
+	f.IntVar(&o.count, "count", 100, "positive result count")
 	f.IntVar(&o.from, "from", 1, "first ranking row")
 	f.Int64Var(&o.submissionID, "submission-id", 0, "exact official submission ID")
 	f.DurationVar(&o.timeout, "timeout", 120*time.Second, "total operation deadline, 1s..10m")
@@ -107,7 +107,7 @@ func parse(args []string) (options, []string, error) {
 	if o.requestID == "" {
 		o.requestID = strconv.FormatInt(time.Now().UnixNano(), 36)
 	}
-	if o.count < 1 || o.count > 100 || o.from < 1 || o.from > 1000000 || o.timeout < time.Second || o.timeout > 10*time.Minute {
+	if o.count < 1 || o.from < 1 || o.timeout < time.Second || o.timeout > 10*time.Minute {
 		return o, nil, core.Fail("invalid_argument", "Count, offset or timeout is out of range.")
 	}
 	if o.sessionStdin && o.credentialsStdin {

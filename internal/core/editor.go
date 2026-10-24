@@ -63,13 +63,13 @@ func (c *Client) ReadProblem(ctx context.Context, id int, index, assetsDir strin
 	}
 	images := all(doc, func(n *html.Node) bool { return n.Type == html.ElementNode && n.Data == "img" && attr(n, "src") != "" })
 	cached := map[string]string{}
-	for i, image := range images {
+	for _, image := range images {
 		if err = ctx.Err(); err != nil {
 			return result, err
 		}
 		source := attr(image, "src")
 		name := cached[source]
-		if name == "" && i < 50 {
+		if name == "" {
 			var data []byte
 			var ext string
 			data, ext, err = c.image(ctx, source)
@@ -132,15 +132,12 @@ func (c *Client) image(ctx context.Context, source string) ([]byte, string, erro
 	}
 	defer res.Body.Close()
 	ext := map[string]string{"image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp"}[strings.ToLower(strings.TrimSpace(strings.Split(res.Header.Get("Content-Type"), ";")[0]))]
-	if res.StatusCode != 200 || ext == "" || res.ContentLength > 5000000 {
+	if res.StatusCode != 200 || ext == "" {
 		return nil, "", Fail("invalid_response", "Image is unavailable or unsupported.")
 	}
-	data, err := io.ReadAll(io.LimitReader(res.Body, 5000001))
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, "", err
-	}
-	if len(data) > 5000000 {
-		return nil, "", Fail("response_too_large", "Image exceeds size limit.")
 	}
 	return data, ext, nil
 }

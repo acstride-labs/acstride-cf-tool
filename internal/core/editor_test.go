@@ -69,7 +69,7 @@ func TestImagePolicy(t *testing.T) {
 	for _, tc := range []struct {
 		status     int
 		kind, body string
-	}{{302, "image/png", "x"}, {200, "image/svg+xml", "x"}, {200, "image/png", strings.Repeat("x", 5000001)}} {
+	}{{302, "image/png", "x"}, {200, "image/svg+xml", "x"}} {
 		c.HTTP.Transport = imageTransport(func(r *http.Request) (*http.Response, error) {
 			return &http.Response{StatusCode: tc.status, Header: http.Header{"Content-Type": {tc.kind}}, Body: io.NopCloser(strings.NewReader(tc.body)), Request: r}, nil
 		})

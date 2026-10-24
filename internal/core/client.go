@@ -14,7 +14,6 @@ import (
 )
 
 const Host = "https://codeforces.com"
-const BodyLimit = 8_000_000
 
 var verificationRE = regexp.MustCompile(`(?is)<title>\s*(?:just a moment|attention required)\b|id\s*=\s*["']challenge-form["']|(?:id|class)\s*=\s*["'][^"']*(?:cf-chl-|g-recaptcha)`)
 
@@ -99,12 +98,9 @@ func (c *Client) Request(ctx context.Context, method, path string, form url.Valu
 		return Page{}, err
 	}
 	defer res.Body.Close()
-	b, err := io.ReadAll(io.LimitReader(res.Body, BodyLimit+1))
+	b, err := io.ReadAll(res.Body)
 	if err != nil {
 		return Page{}, err
-	}
-	if len(b) > BodyLimit {
-		return Page{}, Fail("response_too_large", "Response exceeds the size limit.")
 	}
 	if verification(string(b)) {
 		return Page{}, Fail("verification_required", "Codeforces requires site verification. Use the official website; no verification is bypassed.")
