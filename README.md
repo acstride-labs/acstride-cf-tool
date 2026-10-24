@@ -1,4 +1,14 @@
-# Codeforces Tool
+# AC-Stride CF Tool
+
+The Codeforces CLI development fork for **AC-Stride**, based on
+[xalanq/cf-tool](https://github.com/xalanq/cf-tool).
+The original MIT license and attribution are preserved. The command remains `cf`
+for compatibility. No login, site-verification or submission fixes have been
+validated in this fork yet. The documentation below describes the inherited
+upstream implementation; release badges and downloads refer to the upstream project.
+
+Related: [VS Code extension](https://github.com/acstride-labs/acstride-vscode-extension)
+and [product website](https://github.com/acstride-labs/acstride-web).
 
 [![Github release](https://img.shields.io/github/release/xalanq/cf-tool.svg)](https://github.com/xalanq/cf-tool/releases)
 [![platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue.svg)](https://github.com/xalanq/cf-tool/releases)

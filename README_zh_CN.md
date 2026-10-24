@@ -1,4 +1,13 @@
-# Codeforces Tool
+# AC-Stride CF Tool
+
+**AC-Stride** 的 Codeforces 命令行工具开发分支，基于
+[xalanq/cf-tool](https://github.com/xalanq/cf-tool) 二次开发。
+保留上游 MIT 协议与版权声明，命令名仍为 `cf`，兼容原有使用方式。
+本分支尚未验证登录、人机验证或提交修复；下方文档介绍的是继承的上游实现，
+发布徽章和下载链接指向上游项目。
+
+相关项目：[VS Code 插件](https://github.com/acstride-labs/acstride-vscode-extension)、
+[产品官网](https://github.com/acstride-labs/acstride-web)。
 
 [![Github release](https://img.shields.io/github/release/xalanq/cf-tool.svg)](https://github.com/xalanq/cf-tool/releases)
 [![platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue.svg)](https://github.com/xalanq/cf-tool/releases)
